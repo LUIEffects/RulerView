@@ -35,6 +35,7 @@
         lsp:unitTextSize="10sp" />
 
     <com.lewish.start.oddview.VerticalRulerView
+        android:id="@+id/mRv"
         android:layout_marginTop="30dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

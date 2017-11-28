@@ -316,7 +316,6 @@ public class VerticalRulerView extends View {
     protected void onDraw(Canvas canvas) {
         drawBg(canvas);
         drawScaleAndNum(canvas);
-//        drawResultText(canvas, resultText);
     }
 
     @Override
@@ -471,8 +470,6 @@ public class VerticalRulerView extends View {
                             lagScaleHeight + (rulerHeight - lagScaleHeight) / 2 + scaleNumRect.width(),
                             +scaleNumRect.height() / 2,
                             scaleNumPaint);
-
-
                 }
 
             } else {
@@ -491,17 +488,6 @@ public class VerticalRulerView extends View {
         //绘制屏幕中间用来选中刻度的最大刻度
         canvas.drawLine(0, height / 2, lagScaleHeight, height / 2, lagScalePaint);
 
-    }
-
-    //绘制上面的结果 结果值+单位
-    private void drawResultText(Canvas canvas, String resultText) {
-        if (!showScaleResult) {
-            return;
-        }
-        canvas.translate(-resultNumRect.width() - rulerToResultgap / 2, 0);
-        resultNumPaint.getTextBounds(resultText, 0, resultText.length(), resultNumRect);
-        canvas.drawText(resultText, resultNumRect.width(), height / 2 - resultNumRect.height(),
-                resultNumPaint);
     }
 
     private void drawBg(Canvas canvas) {
