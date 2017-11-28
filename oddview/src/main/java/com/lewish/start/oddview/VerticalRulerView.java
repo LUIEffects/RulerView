@@ -29,13 +29,13 @@ import java.math.BigDecimal;
 public class VerticalRulerView extends View {
     private static final String TAG = "RulerView";
     /**
-     * 尺子高度
+     * 尺子宽度
      */
-    private int rulerHeight = 50;
+    private int rulerWidth = 50;
     /**
      * 尺子和屏幕顶部以及结果之间的高度
      */
-    private int rulerToResultgap = rulerHeight / 4;
+    private int rulerToResultgap = rulerWidth / 4;
     /**
      * 刻度平分多少份
      */
@@ -114,10 +114,6 @@ public class VerticalRulerView extends View {
      */
     private int unitTextSize = 13;
     /**
-     * 是否显示刻度结果
-     */
-    private boolean showScaleResult = true;
-    /**
      * 是否背景显示圆角
      */
     private boolean isBgRoundRect = true;
@@ -134,18 +130,13 @@ public class VerticalRulerView extends View {
     private Paint midScalePaint;
     private Paint lagScalePaint;
     private Paint scaleNumPaint;
-    private Paint resultNumPaint;
-    private Paint kgPaint;
     private Rect scaleNumRect;
-    private Rect resultNumRect;
-    private Rect kgRect;
     private RectF bgRect;
     private int height, width;
-    private int smallScaleHeight;
-    private int midScaleHeight;
-    private int lagScaleHeight;
+    private int smallScaleWidth;
+    private int midScaleWidth;
+    private int lagScaleWidth;
     private int rulerBottom = 0;
-    private int resultNumRight;
     private float downY;
     private float moveY = 0;
     private float currentY;
@@ -177,8 +168,8 @@ public class VerticalRulerView extends View {
 
         TypedArray a = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.RulerView, defStyleAttr, 0);
 
-        rulerHeight = a.getDimensionPixelSize(R.styleable.RulerView_rulerHeight, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, rulerHeight, getResources().getDisplayMetrics()));
+        rulerWidth = a.getDimensionPixelSize(R.styleable.RulerView_rulerHeight, (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, rulerWidth, getResources().getDisplayMetrics()));
 
         rulerToResultgap = a.getDimensionPixelSize(R.styleable.RulerView_rulerToResultgap, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, rulerToResultgap, getResources().getDisplayMetrics()));
@@ -231,7 +222,6 @@ public class VerticalRulerView extends View {
                 TypedValue.COMPLEX_UNIT_SP, unitTextSize, getResources().getDisplayMetrics()));
 
 
-        showScaleResult = a.getBoolean(R.styleable.RulerView_showScaleResult, showScaleResult);
         isBgRoundRect = a.getBoolean(R.styleable.RulerView_isBgRoundRect, isBgRoundRect);
 
         a.recycle();
@@ -244,19 +234,13 @@ public class VerticalRulerView extends View {
         midScalePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         lagScalePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         scaleNumPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        resultNumPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        kgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         bgPaint.setColor(bgColor);
         smallScalePaint.setColor(smallScaleColor);
         midScalePaint.setColor(midScaleColor);
         lagScalePaint.setColor(largeScaleColor);
         scaleNumPaint.setColor(scaleNumColor);
-        resultNumPaint.setColor(resultNumColor);
-        kgPaint.setColor(unitColor);
 
-        resultNumPaint.setStyle(Paint.Style.FILL);
-        kgPaint.setStyle(Paint.Style.FILL);
         bgPaint.setStyle(Paint.Style.FILL);
         smallScalePaint.setStyle(Paint.Style.FILL);
         midScalePaint.setStyle(Paint.Style.FILL);
@@ -270,21 +254,15 @@ public class VerticalRulerView extends View {
         midScalePaint.setStrokeWidth(midScaleStroke);
         lagScalePaint.setStrokeWidth(largeScaleStroke);
 
-        resultNumPaint.setTextSize(resultNumTextSize);
-        kgPaint.setTextSize(unitTextSize);
         scaleNumPaint.setTextSize(scaleNumTextSize);
 
         bgRect = new RectF();
-        resultNumRect = new Rect();
         scaleNumRect = new Rect();
-        kgRect = new Rect();
 
-        resultNumPaint.getTextBounds(resultText, 0, resultText.length(), resultNumRect);
-        kgPaint.getTextBounds(resultText, 0, 1, kgRect);
 
-        smallScaleHeight = rulerHeight / 4;
-        midScaleHeight = rulerHeight / 2;
-        lagScaleHeight = rulerHeight / 2 + 5;
+        smallScaleWidth = rulerWidth / 4;
+        midScaleWidth = rulerWidth / 2;
+        lagScaleWidth = rulerWidth / 2 + 5;
         valueAnimator = new ValueAnimator();
 
     }
@@ -292,24 +270,12 @@ public class VerticalRulerView extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        int heightModule = MeasureSpec.getMode(heightMeasureSpec);
         int heightSize = MeasureSpec.getSize(heightMeasureSpec);
         int widthSize = MeasureSpec.getSize(widthMeasureSpec);
 
-        switch (heightModule) {
-            case MeasureSpec.AT_MOST:
-                height = rulerHeight + (showScaleResult ? resultNumRect.height() : 0) + rulerToResultgap * 2 + getPaddingTop() + getPaddingBottom();
-                break;
-            case MeasureSpec.UNSPECIFIED:
-            case MeasureSpec.EXACTLY:
-                height = heightSize + getPaddingTop() + getPaddingBottom();
-                break;
-        }
         height = heightSize + getPaddingTop() + getPaddingBottom();
         width = widthSize + getPaddingLeft() + getPaddingRight();
-
         setMeasuredDimension(width, height);
-
     }
 
     @Override
@@ -396,7 +362,7 @@ public class VerticalRulerView extends View {
     }
 
     private void drawScaleAndNum(Canvas canvas) {
-        canvas.translate((showScaleResult ? resultNumRect.width() : 0) + rulerToResultgap, 0);//移动画布到结果值的下面
+//        canvas.translate((showScaleResult ? resultNumRect.width() : 0), 0);//移动画布到结果值的下面
 
         int num1;//确定刻度位置
         float num2;
@@ -464,10 +430,10 @@ public class VerticalRulerView extends View {
                 if ((moveY >= 0 && rulerBottom < moveY - scaleGap) || height / 2 - rulerBottom <= getWhichScalMoveY(maxScale + 1) - moveY) {   //去除上下边界
 
                 } else {
-                    canvas.drawLine(0, 0, midScaleHeight, 0, midScalePaint);
+                    canvas.drawLine(0, 0, midScaleWidth, 0, midScalePaint);
                     scaleNumPaint.getTextBounds(num1 / scaleGap + minScale + "", 0, (num1 / scaleGap + minScale + "").length(), scaleNumRect);
                     canvas.drawText(num1 / scaleCount + minScale + "",
-                            lagScaleHeight + (rulerHeight - lagScaleHeight) / 2 + scaleNumRect.width(),
+                            lagScaleWidth + (rulerWidth - lagScaleWidth) / 2 + scaleNumRect.width(),
                             +scaleNumRect.height() / 2,
                             scaleNumPaint);
                 }
@@ -476,7 +442,7 @@ public class VerticalRulerView extends View {
                 if ((moveY >= 0 && rulerBottom < moveY) || height / 2 - rulerBottom < getWhichScalMoveY(maxScale) - moveY) {   //去除左右边界
 
                 } else {
-                    canvas.drawLine(0, 0, smallScaleHeight, 0, smallScalePaint);
+                    canvas.drawLine(0, 0, smallScaleWidth, 0, smallScalePaint);
                 }
             }
             ++num1;
@@ -486,7 +452,7 @@ public class VerticalRulerView extends View {
 
         canvas.restore();
         //绘制屏幕中间用来选中刻度的最大刻度
-        canvas.drawLine(0, height / 2, lagScaleHeight, height / 2, lagScalePaint);
+        canvas.drawLine(0, height / 2, lagScaleWidth, height / 2, lagScalePaint);
 
     }
 
@@ -505,8 +471,8 @@ public class VerticalRulerView extends View {
         void onScrollResult(String result);
     }
 
-//    public void setRulerHeight(int rulerHeight) {
-//        this.rulerHeight = rulerHeight;
+//    public void setRulerHeight(int rulerWidth) {
+//        this.rulerWidth = rulerWidth;
 //        invalidate();
 //    }
 //
