@@ -50,7 +50,7 @@
         lsp:minScale="0"
         lsp:resultNumColor="#50b586"
         lsp:resultNumTextSize="20sp"
-        lsp:rulerHeight="50dp"
+        lsp:rulerWidth="50dp"
         lsp:rulerToResultgap="30dp"
         lsp:scaleCount="2"
         lsp:scaleGap="50dp"

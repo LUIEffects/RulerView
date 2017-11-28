@@ -15,6 +15,7 @@
 
     <declare-styleable name="RulerView">
         <attr name="rulerHeight" format="dimension" />               <!--尺子的高度-->
+        <attr name="rulerWidth" format="dimension"/>                 <!--尺子的宽度-->
         <attr name="rulerToResultgap" format="dimension" />          <!--尺子距离结果的高度-->
         <attr name="scaleGap" format="dimension" />                  <!--刻度间距-->
         <attr name="scaleCount" format="integer" />                  <!--刻度数-->

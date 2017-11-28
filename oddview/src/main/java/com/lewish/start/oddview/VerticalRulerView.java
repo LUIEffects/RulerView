@@ -143,7 +143,7 @@ public class VerticalRulerView extends View {
 
         TypedArray a = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.RulerView, defStyleAttr, 0);
 
-        rulerWidth = a.getDimensionPixelSize(R.styleable.RulerView_rulerHeight, (int) TypedValue.applyDimension(
+        rulerWidth = a.getDimensionPixelSize(R.styleable.RulerView_rulerWidth, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, rulerWidth, getResources().getDisplayMetrics()));
 
         scaleCount = a.getInt(R.styleable.RulerView_scaleCount, scaleCount);
