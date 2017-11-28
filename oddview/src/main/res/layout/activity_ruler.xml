@@ -34,4 +34,31 @@
         lsp:unitColor="#50b586"
         lsp:unitTextSize="10sp" />
 
+    <com.lewish.start.oddview.VerticalRulerView
+        android:layout_marginTop="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        lsp:bgColor="#fcfffc"
+        lsp:firstScale="20"
+        lsp:isBgRoundRect="true"
+        lsp:largeScaleColor="#50b586"
+        lsp:largeScaleStroke="5dp"
+        lsp:maxScale="40"
+        lsp:midScaleColor="#999999"
+        lsp:midScaleStroke="3dp"
+        lsp:minScale="0"
+        lsp:resultNumColor="#50b586"
+        lsp:resultNumTextSize="20sp"
+        lsp:rulerHeight="50dp"
+        lsp:rulerToResultgap="30dp"
+        lsp:scaleCount="2"
+        lsp:scaleGap="50dp"
+        lsp:scaleNumColor="#666666"
+        lsp:scaleNumTextSize="16sp"
+        lsp:showScaleResult="true"
+        lsp:smallScaleColor="#aaaaaa"
+        lsp:smallScaleStroke="2dp"
+        lsp:unit="kg"
+        lsp:unitColor="#50b586"
+        lsp:unitTextSize="10sp" />
 </LinearLayout>

@@ -38,4 +38,30 @@
         <attr name="showScaleResult" format="boolean" />             <!--是否显示结果值-->
         <attr name="isBgRoundRect" format="boolean" />               <!--背景是否圆角-->
     </declare-styleable>
+
+    <!--<declare-styleable name="VerticalRulerView">-->
+        <!--<attr name="rulerHeight" format="dimension" />               &lt;!&ndash;尺子的高度&ndash;&gt;-->
+        <!--<attr name="rulerToResultgap" format="dimension" />          &lt;!&ndash;尺子距离结果的高度&ndash;&gt;-->
+        <!--<attr name="scaleGap" format="dimension" />                  &lt;!&ndash;刻度间距&ndash;&gt;-->
+        <!--<attr name="scaleCount" format="integer" />                  &lt;!&ndash;刻度数&ndash;&gt;-->
+        <!--<attr name="firstScale" format="float" />                    &lt;!&ndash;默认选中的刻度&ndash;&gt;-->
+        <!--<attr name="maxScale" format="integer" />                    &lt;!&ndash;最大刻度&ndash;&gt;-->
+        <!--<attr name="minScale" format="integer" />                    &lt;!&ndash;最小刻度&ndash;&gt;-->
+        <!--<attr name="bgColor" format="color" />                       &lt;!&ndash;背景色&ndash;&gt;-->
+        <!--<attr name="smallScaleColor" format="color" />               &lt;!&ndash;小刻度的颜色&ndash;&gt;-->
+        <!--<attr name="midScaleColor" format="color" />                 &lt;!&ndash;中刻度的颜色&ndash;&gt;-->
+        <!--<attr name="largeScaleColor" format="color" />               &lt;!&ndash;大刻度的颜色&ndash;&gt;-->
+        <!--<attr name="scaleNumColor" format="color" />                 &lt;!&ndash;刻度数的颜色&ndash;&gt;-->
+        <!--<attr name="resultNumColor" format="color" />                &lt;!&ndash;结果字体的颜色&ndash;&gt;-->
+        <!--<attr name="unit" format="string" />                         &lt;!&ndash;单位&ndash;&gt;-->
+        <!--<attr name="unitColor" format="color" />                     &lt;!&ndash;单位颜色&ndash;&gt;-->
+        <!--<attr name="smallScaleStroke" format="dimension" />          &lt;!&ndash;小刻度的宽度&ndash;&gt;-->
+        <!--<attr name="midScaleStroke" format="dimension" />            &lt;!&ndash;中刻度的宽度&ndash;&gt;-->
+        <!--<attr name="largeScaleStroke" format="dimension" />          &lt;!&ndash;大刻度的宽度&ndash;&gt;-->
+        <!--<attr name="resultNumTextSize" format="dimension" />         &lt;!&ndash;结果字体大小&ndash;&gt;-->
+        <!--<attr name="scaleNumTextSize" format="dimension" />          &lt;!&ndash;刻度字体大小&ndash;&gt;-->
+        <!--<attr name="unitTextSize" format="dimension" />              &lt;!&ndash;单位字体大小&ndash;&gt;-->
+        <!--<attr name="showScaleResult" format="boolean" />             &lt;!&ndash;是否显示结果值&ndash;&gt;-->
+        <!--<attr name="isBgRoundRect" format="boolean" />               &lt;!&ndash;背景是否圆角&ndash;&gt;-->
+    <!--</declare-styleable>-->
 </resources>
