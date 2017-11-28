@@ -11,6 +11,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -34,7 +35,7 @@ public class VerticalRulerView extends View {
     /**
      * 刻度平分多少份
      */
-    private int scaleCount = 10;  //刻度评分多少份
+    private int scaleCount = 10;  //刻度平分多少份
     /**
      * 刻度间距
      */
@@ -319,7 +320,7 @@ public class VerticalRulerView extends View {
         canvas.translate(width / 2, 0);
         int num1;//确定刻度位置
         float num2;
-        if (firstScale != -1) {   //第一次进来的时候计算出默认刻度对应的假设滑动的距离moveX
+        if (firstScale != -1) {   //第一次进来的时候计算出默认刻度对应的假设滑动的距离moveY
             moveY = getWhichScalMoveY(firstScale);
             lastMoveY = moveY;
             firstScale = -1;
@@ -376,7 +377,7 @@ public class VerticalRulerView extends View {
         while (rulerBottom < height) {
             if (num1 % scaleCount == 0) {
                 if ((moveY >= 0 && rulerBottom < moveY - scaleGap) || height / 2 - rulerBottom <= getWhichScalMoveY(maxScale + 1) - moveY) {   //去除上下边界
-
+                    Log.d(TAG, "drawScaleAndNum: ");
                 } else {
                     String displayContent = num1 / scaleCount + minScale + "";
                     canvas.drawLine(0, 0, -midScaleWidth, 0, midScalePaint);
@@ -386,10 +387,9 @@ public class VerticalRulerView extends View {
                             +scaleNumRect.height() / 2,
                             scaleNumPaint);
                 }
-
             } else {
                 if ((moveY >= 0 && rulerBottom < moveY) || height / 2 - rulerBottom < getWhichScalMoveY(maxScale) - moveY) {   //去除左右边界
-
+                    Log.d(TAG, "drawScaleAndNum: ");
                 } else {
                     canvas.drawLine(0, 0, -smallScaleWidth, 0, smallScalePaint);
                 }
