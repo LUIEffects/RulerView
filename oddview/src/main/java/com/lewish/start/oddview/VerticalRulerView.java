@@ -312,29 +312,22 @@ public class VerticalRulerView extends View {
     }
 
     private float getWhichScalMoveY(float scale) {
-
         return height / 2 - scaleGap * scaleCount * (scale - minScale);
     }
 
     private void drawScaleAndNum(Canvas canvas) {
-//        canvas.translate((showScaleResult ? resultNumRect.width() : 0), 0);//移动画布到结果值的下面
-
+        canvas.translate(width / 2, 0);
         int num1;//确定刻度位置
         float num2;
-
         if (firstScale != -1) {   //第一次进来的时候计算出默认刻度对应的假设滑动的距离moveX
             moveY = getWhichScalMoveY(firstScale);
             lastMoveY = moveY;
             firstScale = -1;
         }
-
         num1 = -(int) (moveY / scaleGap);//小刻度值
         num2 = (moveY % scaleGap);//偏移量
-
         canvas.save();
-
         rulerBottom = 0;
-
         if (isUp) {   //这部分代码主要是计算手指抬起时，惯性滑动结束时，刻度需要停留的位置
             num2 = ((moveY - height / 2 % scaleGap) % scaleGap);
             if (num2 <= 0) {
@@ -385,10 +378,11 @@ public class VerticalRulerView extends View {
                 if ((moveY >= 0 && rulerBottom < moveY - scaleGap) || height / 2 - rulerBottom <= getWhichScalMoveY(maxScale + 1) - moveY) {   //去除上下边界
 
                 } else {
-                    canvas.drawLine(0, 0, midScaleWidth, 0, midScalePaint);
-                    scaleNumPaint.getTextBounds(num1 / scaleGap + minScale + "", 0, (num1 / scaleGap + minScale + "").length(), scaleNumRect);
-                    canvas.drawText(num1 / scaleCount + minScale + "",
-                            lagScaleWidth + (rulerWidth - lagScaleWidth) / 2 + scaleNumRect.width(),
+                    String displayContent = num1 / scaleCount + minScale + "";
+                    canvas.drawLine(0, 0, -midScaleWidth, 0, midScalePaint);
+                    scaleNumPaint.getTextBounds(displayContent, 0, displayContent.length(), scaleNumRect);
+                    canvas.drawText(displayContent,
+                            -lagScaleWidth - scaleNumRect.width(),
                             +scaleNumRect.height() / 2,
                             scaleNumPaint);
                 }
@@ -397,17 +391,16 @@ public class VerticalRulerView extends View {
                 if ((moveY >= 0 && rulerBottom < moveY) || height / 2 - rulerBottom < getWhichScalMoveY(maxScale) - moveY) {   //去除左右边界
 
                 } else {
-                    canvas.drawLine(0, 0, smallScaleWidth, 0, smallScalePaint);
+                    canvas.drawLine(0, 0, -smallScaleWidth, 0, smallScalePaint);
                 }
             }
             ++num1;
             rulerBottom += scaleGap;
             canvas.translate(0, scaleGap);
         }
-
         canvas.restore();
         //绘制屏幕中间用来选中刻度的最大刻度
-        canvas.drawLine(0, height / 2, lagScaleWidth, height / 2, lagScalePaint);
+        canvas.drawLine(0, height / 2, -lagScaleWidth, height / 2, lagScalePaint);
 
     }
 
@@ -426,97 +419,4 @@ public class VerticalRulerView extends View {
         void onScrollResult(String result);
     }
 
-//    public void setRulerHeight(int rulerWidth) {
-//        this.rulerWidth = rulerWidth;
-//        invalidate();
-//    }
-//
-//    public void setScaleCount(int scaleCount) {
-//        this.scaleCount = scaleCount;
-//        invalidate();
-//    }
-//
-//    public void setScaleGap(int scaleGap) {
-//        this.scaleGap = scaleGap;
-//        invalidate();
-//    }
-//
-//    public void setMinScale(int minScale) {
-//        this.minScale = minScale;
-//        invalidate();
-//    }
-//
-//    public void setFirstScale(float firstScale) {
-//        this.firstScale = firstScale;
-//        invalidate();
-//    }
-//
-//    public void setMaxScale(int maxScale) {
-//        this.maxScale = maxScale;
-//        invalidate();
-//    }
-//
-//    public void setBgColor(int bgColor) {
-//        this.bgColor = bgColor;
-//        invalidate();
-//    }
-//
-//    public void setSmallScaleColor(int smallScaleColor) {
-//        this.smallScaleColor = smallScaleColor;
-//        invalidate();
-//    }
-//
-//    public void setMidScaleColor(int midScaleColor) {
-//        this.midScaleColor = midScaleColor;
-//        invalidate();
-//    }
-//
-//    public void setLargeScaleColor(int largeScaleColor) {
-//        this.largeScaleColor = largeScaleColor;
-//    }
-//
-//    public void setScaleNumColor(int scaleNumColor) {
-//        this.scaleNumColor = scaleNumColor;
-//        invalidate();
-//    }
-//
-//    public void setResultNumColor(int resultNumColor) {
-//        this.resultNumColor = resultNumColor;
-//        invalidate();
-//    }
-//
-//    public void setUnit(String unit) {
-//        this.unit = unit;
-//        invalidate();
-//    }
-//
-//    public void setSmallScaleStroke(int smallScaleStroke) {
-//        this.smallScaleStroke = smallScaleStroke;
-//        invalidate();
-//    }
-//
-//    public void setMidScaleStroke(int midScaleStroke) {
-//        this.midScaleStroke = midScaleStroke;
-//        invalidate();
-//    }
-//
-//    public void setLargeScaleStroke(int largeScaleStroke) {
-//        this.largeScaleStroke = largeScaleStroke;
-//        invalidate();
-//    }
-//
-//    public void setScaleNumTextSize(int scaleNumTextSize) {
-//        this.scaleNumTextSize = scaleNumTextSize;
-//        invalidate();
-//    }
-//
-//    public void setShowScaleResult(boolean showScaleResult) {
-//        this.showScaleResult = showScaleResult;
-//        invalidate();
-//    }
-//
-//    public void setIsBgRoundRect(boolean bgRoundRect) {
-//        isBgRoundRect = bgRoundRect;
-//        invalidate();
-//    }
 }

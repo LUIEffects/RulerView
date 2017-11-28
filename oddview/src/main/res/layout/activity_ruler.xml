@@ -36,9 +36,9 @@
 
     <com.lewish.start.oddview.VerticalRulerView
         android:id="@+id/mRv"
-        android:layout_marginTop="30dp"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
         lsp:bgColor="#fcfffc"
         lsp:firstScale="20"
         lsp:isBgRoundRect="true"
@@ -50,8 +50,8 @@
         lsp:minScale="0"
         lsp:resultNumColor="#50b586"
         lsp:resultNumTextSize="20sp"
-        lsp:rulerWidth="50dp"
         lsp:rulerToResultgap="30dp"
+        lsp:rulerWidth="50dp"
         lsp:scaleCount="2"
         lsp:scaleGap="50dp"
         lsp:scaleNumColor="#666666"
