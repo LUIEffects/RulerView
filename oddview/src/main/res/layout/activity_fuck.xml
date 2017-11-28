@@ -10,17 +10,35 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
         <Button
-            android:id="@+id/mBtnOld"
+            android:id="@+id/mBtnSX"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="老的"/>
+            android:text="上下"/>
         <Button
-            android:id="@+id/mBtnNew"
+            android:id="@+id/mBtnD"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="新的" />
+            android:text="动画" />
     </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/mTv"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+        <com.lewish.start.oddview.OddView
+            android:id="@+id/mOddView"
+            android:layout_below="@id/mTv"
+            android:layout_width="match_parent"
+            android:layout_height="200dp" />
+    </LinearLayout>
+
 
 </LinearLayout>
