@@ -10,7 +10,6 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
@@ -32,10 +31,6 @@ public class VerticalRulerView extends View {
      * 尺子宽度
      */
     private int rulerWidth = 50;
-    /**
-     * 尺子和屏幕顶部以及结果之间的高度
-     */
-    private int rulerToResultgap = rulerWidth / 4;
     /**
      * 刻度平分多少份
      */
@@ -78,18 +73,6 @@ public class VerticalRulerView extends View {
      */
     private int scaleNumColor = 0xff333333;
     /**
-     * 结果值颜色
-     */
-    private int resultNumColor = 0xff50b586;
-    /**
-     * kg颜色
-     */
-    private String unit = "kg";
-    /**
-     * kg颜色
-     */
-    private int unitColor = 0xff50b586;
-    /**
      * 小刻度粗细大小
      */
     private int smallScaleStroke = 1;
@@ -102,17 +85,9 @@ public class VerticalRulerView extends View {
      */
     private int largeScaleStroke = 3;
     /**
-     * 结果字体大小
-     */
-    private int resultNumTextSize = 20;
-    /**
      * 刻度字体大小
      */
     private int scaleNumTextSize = 16;
-    /**
-     * 单位字体大小
-     */
-    private int unitTextSize = 13;
     /**
      * 是否背景显示圆角
      */
@@ -171,9 +146,6 @@ public class VerticalRulerView extends View {
         rulerWidth = a.getDimensionPixelSize(R.styleable.RulerView_rulerHeight, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, rulerWidth, getResources().getDisplayMetrics()));
 
-        rulerToResultgap = a.getDimensionPixelSize(R.styleable.RulerView_rulerToResultgap, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, rulerToResultgap, getResources().getDisplayMetrics()));
-
         scaleCount = a.getInt(R.styleable.RulerView_scaleCount, scaleCount);
 
         scaleGap = a.getDimensionPixelSize(R.styleable.RulerView_scaleGap, (int) TypedValue.applyDimension(
@@ -195,16 +167,6 @@ public class VerticalRulerView extends View {
 
         scaleNumColor = a.getColor(R.styleable.RulerView_scaleNumColor, scaleNumColor);
 
-        resultNumColor = a.getColor(R.styleable.RulerView_resultNumColor, resultNumColor);
-
-        unitColor = a.getColor(R.styleable.RulerView_unitColor, unitColor);
-
-        String tempUnit = unit;
-        unit = a.getString(R.styleable.RulerView_unit);
-        if (TextUtils.isEmpty(unit)) {
-            unit = tempUnit;
-        }
-
         smallScaleStroke = a.getDimensionPixelSize(R.styleable.RulerView_smallScaleStroke, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, smallScaleStroke, getResources().getDisplayMetrics()));
 
@@ -212,15 +174,8 @@ public class VerticalRulerView extends View {
                 TypedValue.COMPLEX_UNIT_DIP, midScaleStroke, getResources().getDisplayMetrics()));
         largeScaleStroke = a.getDimensionPixelSize(R.styleable.RulerView_largeScaleStroke, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, largeScaleStroke, getResources().getDisplayMetrics()));
-        resultNumTextSize = a.getDimensionPixelSize(R.styleable.RulerView_resultNumTextSize, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_SP, resultNumTextSize, getResources().getDisplayMetrics()));
-
         scaleNumTextSize = a.getDimensionPixelSize(R.styleable.RulerView_scaleNumTextSize, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, scaleNumTextSize, getResources().getDisplayMetrics()));
-
-        unitTextSize = a.getDimensionPixelSize(R.styleable.RulerView_unitTextSize, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_SP, unitTextSize, getResources().getDisplayMetrics()));
-
 
         isBgRoundRect = a.getBoolean(R.styleable.RulerView_isBgRoundRect, isBgRoundRect);
 
@@ -476,11 +431,6 @@ public class VerticalRulerView extends View {
 //        invalidate();
 //    }
 //
-//    public void setRulerToResultgap(int rulerToResultgap) {
-//        this.rulerToResultgap = rulerToResultgap;
-//        invalidate();
-//    }
-//
 //    public void setScaleCount(int scaleCount) {
 //        this.scaleCount = scaleCount;
 //        invalidate();
@@ -540,11 +490,6 @@ public class VerticalRulerView extends View {
 //        invalidate();
 //    }
 //
-//    public void setUnitColor(int unitColor) {
-//        this.unitColor = unitColor;
-//        invalidate();
-//    }
-//
 //    public void setSmallScaleStroke(int smallScaleStroke) {
 //        this.smallScaleStroke = smallScaleStroke;
 //        invalidate();
@@ -560,18 +505,8 @@ public class VerticalRulerView extends View {
 //        invalidate();
 //    }
 //
-//    public void setResultNumTextSize(int resultNumTextSize) {
-//        this.resultNumTextSize = resultNumTextSize;
-//        invalidate();
-//    }
-//
 //    public void setScaleNumTextSize(int scaleNumTextSize) {
 //        this.scaleNumTextSize = scaleNumTextSize;
-//        invalidate();
-//    }
-//
-//    public void setUnitTextSize(int unitTextSize) {
-//        this.unitTextSize = unitTextSize;
 //        invalidate();
 //    }
 //
