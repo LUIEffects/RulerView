@@ -18,8 +18,6 @@ import android.view.VelocityTracker;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 
-
-import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.math.BigDecimal;
 
@@ -410,8 +408,8 @@ public class RulerView extends View {
             firstScale = -1;
         }
 
-        num1 = -(int)(moveX / scaleGap);
-        num2 = (moveX % scaleGap);
+        num1 = -(int) (moveX / scaleGap);//小刻度值
+        num2 = (moveX % scaleGap);//偏移量
 
         canvas.save();
 
@@ -471,6 +469,8 @@ public class RulerView extends View {
                     scaleNumPaint.getTextBounds(num1 / scaleGap + minScale + "", 0, (num1 / scaleGap + minScale + "").length(), scaleNumRect);
                     canvas.drawText(num1 / scaleCount + minScale + "", -scaleNumRect.width() / 2, lagScaleHeight +
                             (rulerHeight - lagScaleHeight) / 2 + scaleNumRect.height(), scaleNumPaint);
+
+
                 }
 
             } else {
@@ -515,8 +515,10 @@ public class RulerView extends View {
 
     public interface OnChooseResulterListener {
         void onEndResult(String result);
+
         void onScrollResult(String result);
     }
+
     public void setRulerHeight(int rulerHeight) {
         this.rulerHeight = rulerHeight;
         invalidate();

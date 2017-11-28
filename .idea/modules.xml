@@ -3,8 +3,11 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/RulerView.iml" filepath="$PROJECT_DIR$/RulerView.iml" />
+      <module fileurl="file://E:\GitHub\RulerView\RulerView.iml" filepath="E:\GitHub\RulerView\RulerView.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://E:\GitHub\RulerView\app\app.iml" filepath="E:\GitHub\RulerView\app\app.iml" />
       <module fileurl="file://$PROJECT_DIR$/rulerlib/rulerlib.iml" filepath="$PROJECT_DIR$/rulerlib/rulerlib.iml" />
+      <module fileurl="file://E:\GitHub\RulerView\rulerlib\rulerlib.iml" filepath="E:\GitHub\RulerView\rulerlib\rulerlib.iml" />
     </modules>
   </component>
 </project>
