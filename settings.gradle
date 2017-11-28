@@ -1,1 +1,1 @@
-include ':app', ':rulerlib'
+include ':app', ':rulerlib', ':oddview'
