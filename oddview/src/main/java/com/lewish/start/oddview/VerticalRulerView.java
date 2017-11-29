@@ -6,7 +6,9 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.AttributeSet;
@@ -25,73 +27,65 @@ import java.math.BigDecimal;
  */
 
 public class VerticalRulerView extends View {
+
     private static final String TAG = "RulerView";
-    /**
-     * 尺子宽度
-     */
-    private int rulerWidth = 50;
-    /**
-     * 刻度平分多少份
-     */
-    private int scaleCount = 10;  //刻度平分多少份
-    /**
-     * 刻度间距
-     */
-    private int scaleGap = 20;
-    /**
-     * 刻度最小值
-     */
-    private int minScale = 0;
-    /**
-     * 第一次显示的刻度
-     */
-    private float firstScale = 50f;
-    /**
-     * 刻度最大值
-     */
-    private int maxScale = 100;
+    //尺寸相关常量
+    private static final int DEFAULT_SCALE_LINE_STROKE_DP = 2;
+    private static final int DEFAULT_LARGE_SCALE_STROKE_DP = 3;
+    private static final int DEFAULT_SCALE_NUM_TEXTSIZE_SP = 16;
+    private static final int DEFAULT_SCALE_GAP_DP = 20;
+    //颜色相关常量
+    private static final String DEFAULT_RIGHTAREA_COLOR = "#4f4f4f";
+    private static final String DEFAULT_MIDDLEAREA_COLOR = "#555555";
+    private static final String DEFAULT_LEFTAREA_COLOR = "#4a4a4a";
+    private static final String DEFAULT_SCALE_LINE_COLOR = "#525252";
+    private static final String DEFAULT_SELECTED_COLOR = "#ffd401";
+    private static final String DEFAULT_SCALE_NUM_COLOR = "#bababa";
+    //贝塞尔曲线相关常量
+    private static final int RIGHT_BEZIER_CONTROL_POINT_OFFSET = -250;
+    public static final int RIGHT_BEZIER_OFFSET = -50;
+    public static final int MIDDLE_BEZIER_REL_OFFSET = -150;
+    public static final int LEFT_BEZIER_REL_OFFSET = -200;
+    //其他常量
+    private static final int DEFAULT_SCALE_COUNT = 2;
+    private static final int DEFAULT_MIN_SCALE = 0;
+    private static final float DEFAULT_FIRST_SCALE = 50f;
+    private static final int DEFAULT_MAX_SCALE = 100;
 
-    /**
-     * 背景颜色
-     */
-    private int bgColor = 0xfffcfffc;
-    /**
-     * 小刻度的颜色
-     */
-    private int smallScaleColor = 0xff999999;
-    /**
-     * 中刻度的颜色
-     */
-    private int midScaleColor = 0xff666666;
-    /**
-     * 大刻度的颜色
-     */
-    private int largeScaleColor = 0xff50b586;
-    /**
-     * 刻度颜色
-     */
-    private int scaleNumColor = 0xff333333;
-    /**
-     * 小刻度粗细大小
-     */
-    private int smallScaleStroke = 1;
-    /**
-     * 中刻度粗细大小
-     */
-    private int midScaleStroke = 2;
-    /**
-     * 大刻度粗细大小
-     */
-    private int largeScaleStroke = 3;
-    /**
-     * 刻度字体大小
-     */
-    private int scaleNumTextSize = 16;
-    /**
-     * 是否背景显示圆角
-     */
-    private boolean isBgRoundRect = true;
+    //颜色
+    private int bgColor = 0xfffcfffc;//背景颜色
+    private int rightAreaColor;//右Arc Area颜色
+    private int middleAreaColor;//中间Arc Area颜色
+    private int leftAreaColor;//左边Arc Area颜色
+    private int scaleLineColor;//刻度线颜色
+    private int selectedColor;//选中时的颜色
+    private int scaleNumColor;//数字颜色
 
+    //线宽
+    private float scaleLineStroke;
+    private int largeScaleStroke;
+    //Paint
+    private Paint bgPaint;//背景画笔
+    private Paint mAreaPaint;//Arc区域画笔
+    private Paint scaleNumPaint;//刻度数画笔
+    private Paint scaleLinePaint;//刻度线画笔
+    private Paint lagScalePaint;//选中准线画笔
+    //Path
+    private Path mRightArcPath;
+    private Path mMiddleArcPath;
+    private Path mLeftArcPath;
+    //Rec
+    private Rect scaleNumRect;
+    private RectF bgRect;
+
+    private int scaleNumTextSize;
+    private int scaleGap;
+    private int scaleCount;  //刻度平分多少份
+    private int minScale;
+    private int maxScale;
+    private float firstScale = DEFAULT_FIRST_SCALE;
+    private int rulerWidth = 50;//尺子宽度
+    private boolean isBgRoundRect = true;//是否显示圆角
     /**
      * 结果回调
      */
@@ -99,17 +93,15 @@ public class VerticalRulerView extends View {
     private ValueAnimator valueAnimator;
     private VelocityTracker velocityTracker = VelocityTracker.obtain();
     private String resultText = String.valueOf(firstScale);
-    private Paint bgPaint;
-    private Paint smallScalePaint;
-    private Paint midScalePaint;
-    private Paint lagScalePaint;
-    private Paint scaleNumPaint;
-    private Rect scaleNumRect;
-    private RectF bgRect;
+
+
     private int height, width;
     private int smallScaleWidth;
     private int midScaleWidth;
     private int lagScaleWidth;
+
+
+    //计算逻辑相关变量
     private int rulerBottom = 0;
     private float downY;
     private float moveY = 0;
@@ -119,10 +111,6 @@ public class VerticalRulerView extends View {
     private int topScroll;
     private int bottomScroll;
     private int yVelocity;
-
-    //    private Path mScaleBezierPath;
-//    private PathMeasure mScaleBezierPathMeasure;
-//    private float mScaleBezierPos[];
     private BezierHelper mBezierHelper;
 
     public VerticalRulerView(Context context) {
@@ -150,83 +138,80 @@ public class VerticalRulerView extends View {
         rulerWidth = a.getDimensionPixelSize(R.styleable.RulerView_rulerWidth, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, rulerWidth, getResources().getDisplayMetrics()));
 
-        scaleCount = a.getInt(R.styleable.RulerView_scaleCount, scaleCount);
+        scaleCount = a.getInt(R.styleable.RulerView_scaleCount, DEFAULT_SCALE_COUNT);
 
         scaleGap = a.getDimensionPixelSize(R.styleable.RulerView_scaleGap, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, scaleGap, getResources().getDisplayMetrics()));
+                TypedValue.COMPLEX_UNIT_DIP, DEFAULT_SCALE_GAP_DP, getResources().getDisplayMetrics()));
 
-        minScale = a.getInt(R.styleable.RulerView_minScale, minScale);
+        minScale = a.getInt(R.styleable.RulerView_minScale, DEFAULT_MIN_SCALE);
 
-        firstScale = a.getFloat(R.styleable.RulerView_firstScale, firstScale);
+        firstScale = a.getFloat(R.styleable.RulerView_firstScale, DEFAULT_FIRST_SCALE);
 
-        maxScale = a.getInt(R.styleable.RulerView_maxScale, maxScale);
+        maxScale = a.getInt(R.styleable.RulerView_maxScale, DEFAULT_MAX_SCALE);
 
         bgColor = a.getColor(R.styleable.RulerView_bgColor, bgColor);
 
-        smallScaleColor = a.getColor(R.styleable.RulerView_smallScaleColor, smallScaleColor);
 
-        midScaleColor = a.getColor(R.styleable.RulerView_midScaleColor, midScaleColor);
-
-        largeScaleColor = a.getColor(R.styleable.RulerView_largeScaleColor, largeScaleColor);
-
-        scaleNumColor = a.getColor(R.styleable.RulerView_scaleNumColor, scaleNumColor);
-
-        smallScaleStroke = a.getDimensionPixelSize(R.styleable.RulerView_smallScaleStroke, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, smallScaleStroke, getResources().getDisplayMetrics()));
-
-        midScaleStroke = a.getDimensionPixelSize(R.styleable.RulerView_midScaleStroke, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, midScaleStroke, getResources().getDisplayMetrics()));
         largeScaleStroke = a.getDimensionPixelSize(R.styleable.RulerView_largeScaleStroke, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, largeScaleStroke, getResources().getDisplayMetrics()));
+                TypedValue.COMPLEX_UNIT_DIP, DEFAULT_LARGE_SCALE_STROKE_DP, getResources().getDisplayMetrics()));
         scaleNumTextSize = a.getDimensionPixelSize(R.styleable.RulerView_scaleNumTextSize, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_SP, scaleNumTextSize, getResources().getDisplayMetrics()));
+                TypedValue.COMPLEX_UNIT_SP, DEFAULT_SCALE_NUM_TEXTSIZE_SP, getResources().getDisplayMetrics()));
 
         isBgRoundRect = a.getBoolean(R.styleable.RulerView_isBgRoundRect, isBgRoundRect);
+
+        scaleLineColor = a.getColor(R.styleable.RulerView_scaleLineColor, Color.parseColor(DEFAULT_SCALE_LINE_COLOR));
+
+        scaleLineStroke = a.getDimension(R.styleable.RulerView_scaleLineStroke, (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, DEFAULT_SCALE_LINE_STROKE_DP, getResources().getDisplayMetrics()));
+
+        selectedColor = a.getColor(R.styleable.RulerView_selectedColor, Color.parseColor(DEFAULT_SELECTED_COLOR));
+        scaleNumColor = a.getColor(R.styleable.RulerView_scaleNumColor, Color.parseColor(DEFAULT_SCALE_NUM_COLOR));
+        //矩形区域相关
+        rightAreaColor = a.getColor(R.styleable.RulerView_rightAreaColor, Color.parseColor(DEFAULT_RIGHTAREA_COLOR));
+        middleAreaColor = a.getColor(R.styleable.RulerView_middleAreaColor, Color.parseColor(DEFAULT_MIDDLEAREA_COLOR));
+        leftAreaColor = a.getColor(R.styleable.RulerView_leftAreaColor, Color.parseColor(DEFAULT_LEFTAREA_COLOR));
 
         a.recycle();
     }
 
 
     private void init() {
+        //画背景的笔
         bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        smallScalePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        midScalePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        lagScalePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        scaleNumPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
         bgPaint.setColor(bgColor);
-        smallScalePaint.setColor(smallScaleColor);
-        midScalePaint.setColor(midScaleColor);
-        lagScalePaint.setColor(largeScaleColor);
-        scaleNumPaint.setColor(scaleNumColor);
-
         bgPaint.setStyle(Paint.Style.FILL);
-        smallScalePaint.setStyle(Paint.Style.FILL);
-        midScalePaint.setStyle(Paint.Style.FILL);
+        //弧形区域画笔
+        mAreaPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mAreaPaint.setStyle(Paint.Style.FILL);
+        mAreaPaint.setStrokeWidth(5);
+        //画准线的画笔
+        lagScalePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        lagScalePaint.setColor(selectedColor);
         lagScalePaint.setStyle(Paint.Style.FILL);
-
         lagScalePaint.setStrokeCap(Paint.Cap.ROUND);
-        midScalePaint.setStrokeCap(Paint.Cap.ROUND);
-        smallScalePaint.setStrokeCap(Paint.Cap.ROUND);
-
-        smallScalePaint.setStrokeWidth(smallScaleStroke);
-        midScalePaint.setStrokeWidth(midScaleStroke);
         lagScalePaint.setStrokeWidth(largeScaleStroke);
-
+        //画刻度线的笔
+        scaleLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        scaleLinePaint.setColor(scaleLineColor);
+        scaleLinePaint.setStyle(Paint.Style.FILL);
+        scaleLinePaint.setStrokeCap(Paint.Cap.ROUND);
+        scaleLinePaint.setStrokeWidth(scaleLineStroke);
+        //画刻度数的笔
+        scaleNumPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        scaleNumPaint.setColor(scaleNumColor);
         scaleNumPaint.setTextSize(scaleNumTextSize);
-
+        //矩形
         bgRect = new RectF();
         scaleNumRect = new Rect();
-
+        //Path
+        mRightArcPath = new Path();
+        mMiddleArcPath = new Path();
+        mLeftArcPath = new Path();
 
         smallScaleWidth = rulerWidth / 4;
         midScaleWidth = rulerWidth / 2;
         lagScaleWidth = rulerWidth / 2 + 5;
         valueAnimator = new ValueAnimator();
-
-//        mScaleBezierPath = new Path();
-//        mScaleBezierPathMeasure = new PathMeasure();
-//        mScaleBezierPos = new float[2];
         mBezierHelper = new BezierHelper();
     }
 
@@ -243,19 +228,175 @@ public class VerticalRulerView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        drawBg(canvas);
+//        drawBg(canvas);
+        drawArcArea(canvas);
         drawScaleAndNum(canvas);
-//        drawBezier(canvas);
     }
 
-//    private void drawBezier(Canvas canvas) {
-//        int scaleBezierStartX = width / 2;
-//        int scaleBezierControlX = width / 2 - 250;
-//        mScaleBezierPath.moveTo(scaleBezierStartX, height);
-//        mScaleBezierPath.quadTo(scaleBezierControlX, height / 2, scaleBezierStartX, 0);
-//        mScaleBezierPathMeasure.setPath(mScaleBezierPath, false);
-//        canvas.drawPath(mScaleBezierPath, midScalePaint);
-//    }
+    private float getWhichScalMoveY(float scale) {
+        return height / 2 - scaleGap * scaleCount * (scale - minScale);
+    }
+
+    /**
+     * 画弧形区域
+     */
+    private void drawArcArea(Canvas canvas) {
+        //画最右边的
+        int rightStartPointX = width + RIGHT_BEZIER_OFFSET;
+        int rightControlPointX = width + RIGHT_BEZIER_CONTROL_POINT_OFFSET;
+        mRightArcPath.moveTo(rightStartPointX, height);
+        mRightArcPath.lineTo(width, height);
+        mRightArcPath.lineTo(width, 0);
+        mRightArcPath.lineTo(rightStartPointX, 0);
+        mRightArcPath.quadTo(rightControlPointX, height / 2, rightStartPointX, height);
+        mRightArcPath.close();
+        mAreaPaint.setColor(rightAreaColor);
+        canvas.drawPath(mRightArcPath, mAreaPaint);
+        //画中间的
+        int middleStartPointX = rightStartPointX + MIDDLE_BEZIER_REL_OFFSET;
+        int middleControlPointX = rightControlPointX + MIDDLE_BEZIER_REL_OFFSET;
+        mMiddleArcPath.moveTo(middleStartPointX, height);
+        mMiddleArcPath.lineTo(rightStartPointX, height);
+        mMiddleArcPath.quadTo(rightControlPointX, height / 2, rightStartPointX, 0);
+        mMiddleArcPath.lineTo(middleStartPointX, 0);
+        mMiddleArcPath.quadTo(middleControlPointX, height / 2, middleStartPointX, height);
+        mMiddleArcPath.close();
+        mAreaPaint.setColor(middleAreaColor);
+        canvas.drawPath(mMiddleArcPath, mAreaPaint);
+        //画最左边的
+        int leftStartPointX = middleStartPointX + LEFT_BEZIER_REL_OFFSET;
+        int leftControlPointX = middleControlPointX + LEFT_BEZIER_REL_OFFSET;
+        mLeftArcPath.moveTo(leftStartPointX, height);
+        mLeftArcPath.lineTo(middleStartPointX, height);
+        mLeftArcPath.quadTo(middleControlPointX, height / 2, middleStartPointX, 0);
+        mLeftArcPath.lineTo(leftStartPointX, 0);
+        mLeftArcPath.quadTo(leftControlPointX, height / 2, leftStartPointX, height);
+        mLeftArcPath.close();
+        mAreaPaint.setColor(leftAreaColor);
+        canvas.drawPath(mLeftArcPath, mAreaPaint);
+    }
+
+    private void drawScaleAndNum(Canvas canvas) {
+        canvas.save();
+        canvas.translate(width + RIGHT_BEZIER_OFFSET + MIDDLE_BEZIER_REL_OFFSET, 0);
+        int num1;//确定刻度位置
+        float num2;
+        if (firstScale != -1) {   //第一次进来的时候计算出默认刻度对应的假设滑动的距离moveY
+            moveY = getWhichScalMoveY(firstScale);
+            lastMoveY = moveY;
+            firstScale = -1;
+        }
+        num1 = -(int) (moveY / scaleGap);//小刻度值
+        num2 = (moveY % scaleGap);//偏移量
+        canvas.save();
+        rulerBottom = 0;
+        if (isUp) {   //这部分代码主要是计算手指抬起时，惯性滑动结束时，刻度需要停留的位置
+            num2 = ((moveY - height / 2 % scaleGap) % scaleGap);
+            if (num2 <= 0) {
+                num2 = scaleGap - Math.abs(num2);
+            }
+            topScroll = (int) Math.abs(num2);
+            bottomScroll = (int) (scaleGap - Math.abs(num2));
+
+            float moveY2 = num2 <= scaleGap / 2 ? moveY - topScroll : moveY + bottomScroll;
+
+            if (valueAnimator != null && !valueAnimator.isRunning()) {
+                valueAnimator = ValueAnimator.ofFloat(moveY, moveY2);
+                valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        moveY = (float) animation.getAnimatedValue();
+                        lastMoveY = moveY;
+                        invalidate();
+                    }
+                });
+                valueAnimator.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        //这里是滑动结束时候回调给使用者的结果值
+                        if (onChooseResulterListener != null) {
+                            onChooseResulterListener.onEndResult(resultText);
+                        }
+                    }
+                });
+                valueAnimator.setDuration(300);
+                valueAnimator.start();
+                isUp = false;
+            }
+
+            num1 = (int) -(moveY / scaleGap);
+            num2 = (moveY % scaleGap);
+        }
+        //这里是滑动时候不断回调给使用者的结果值
+        resultText = String.valueOf(new WeakReference<>(new BigDecimal((height / 2 - moveY) / (scaleGap * scaleCount))).get().setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + minScale);
+        if (onChooseResulterListener != null) {
+            onChooseResulterListener.onScrollResult(resultText);
+        }
+        float scaleBezierStartX = 0;
+        float scaleBezierStartY = 0;
+        float scaleBezierControlX = -250;
+        float scaleBezierControlY = height / 2;
+        float scaleBezierEndX = scaleBezierStartX;
+        float scaleBezierEndY = height;
+        mBezierHelper.init(scaleBezierStartX, scaleBezierStartY, scaleBezierControlX, scaleBezierControlY, scaleBezierEndX, scaleBezierEndY);
+//        mBezierHelper.drawPath(canvas,lagScalePaint);
+        //绘制当前屏幕可见刻度,不需要裁剪屏幕,while循环只会执行·屏幕宽度/刻度宽度·次
+        canvas.translate(0, num2);    //不加该偏移的话，滑动时刻度不会落在0~1之间只会落在整数上面,其实这个都能设置一种模式了，毕竟初衷就是指针不会落在小数上面
+        int i = 0;
+        float offsetX = 0;
+        while (rulerBottom < height) {
+            if (i == 0) {
+                offsetX = mBezierHelper.getX(1f * (0 - num2) / height);
+            }
+            if (num1 % scaleCount == 0) {
+                if ((moveY >= 0 && rulerBottom < moveY - scaleGap) || height / 2 - rulerBottom <= getWhichScalMoveY(maxScale + 1) - moveY) {   //去除上下边界
+
+                } else {
+                    String displayContent = num1 / scaleCount + minScale + "";
+                    canvas.drawLine(offsetX, 0, offsetX - midScaleWidth, 0, scaleLinePaint);
+                    scaleNumPaint.getTextBounds(displayContent, 0, displayContent.length(), scaleNumRect);
+                    canvas.drawText(displayContent,
+                            offsetX - lagScaleWidth - scaleNumRect.width(),
+                            +scaleNumRect.height() / 2,
+                            scaleNumPaint);
+                }
+            } else {
+                if ((moveY >= 0 && rulerBottom < moveY) || height / 2 - rulerBottom < getWhichScalMoveY(maxScale) - moveY) {   //去除左右边界
+
+                } else {
+                    canvas.drawLine(offsetX, 0, offsetX - smallScaleWidth, 0, scaleLinePaint);
+                }
+            }
+            ++num1;
+            rulerBottom += scaleGap;
+//            float per = 1f * rulerBottom / height;
+//            StringBuffer sb = new StringBuffer();
+//            sb.append("rulerBottom=").append(rulerBottom).append("      ")
+//                    .append("height=").append(height).append("      ")
+//                    .append("rulerBottom/height=").append(per).append("       ")
+//                    .append("x=").append(mBezierHelper.getX(per));
+//            Log.d(TAG, sb.toString());
+            offsetX = mBezierHelper.getX(1f * rulerBottom / height);
+            i++;
+            canvas.translate(0, scaleGap);
+        }
+        canvas.restore();
+        //绘制屏幕中间用来选中刻度的最大刻度
+//        canvas.drawLine(0, height / 2, -lagScaleWidth, height / 2, lagScalePaint);
+        float xOffset = mBezierHelper.getX(0.5f);
+        canvas.drawLine(xOffset, height / 2, xOffset - lagScaleWidth, height / 2, lagScalePaint);
+
+    }
+
+    private void drawBg(Canvas canvas) {
+        bgRect.set(0, 0, width, height);
+        if (isBgRoundRect) {
+            canvas.drawRoundRect(bgRect, 20, 20, bgPaint); //20->椭圆的用于圆形角x-radius
+        } else {
+            canvas.drawRect(bgRect, bgPaint);
+        }
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -327,129 +468,6 @@ public class VerticalRulerView extends View {
         });
 
         valueAnimator.start();
-    }
-
-    private float getWhichScalMoveY(float scale) {
-        return height / 2 - scaleGap * scaleCount * (scale - minScale);
-    }
-
-    private void drawScaleAndNum(Canvas canvas) {
-        canvas.translate(width / 2, 0);
-        int num1;//确定刻度位置
-        float num2;
-        if (firstScale != -1) {   //第一次进来的时候计算出默认刻度对应的假设滑动的距离moveY
-            moveY = getWhichScalMoveY(firstScale);
-            lastMoveY = moveY;
-            firstScale = -1;
-        }
-        num1 = -(int) (moveY / scaleGap);//小刻度值
-        num2 = (moveY % scaleGap);//偏移量
-        canvas.save();
-        rulerBottom = 0;
-        if (isUp) {   //这部分代码主要是计算手指抬起时，惯性滑动结束时，刻度需要停留的位置
-            num2 = ((moveY - height / 2 % scaleGap) % scaleGap);
-            if (num2 <= 0) {
-                num2 = scaleGap - Math.abs(num2);
-            }
-            topScroll = (int) Math.abs(num2);
-            bottomScroll = (int) (scaleGap - Math.abs(num2));
-
-            float moveY2 = num2 <= scaleGap / 2 ? moveY - topScroll : moveY + bottomScroll;
-
-            if (valueAnimator != null && !valueAnimator.isRunning()) {
-                valueAnimator = ValueAnimator.ofFloat(moveY, moveY2);
-                valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        moveY = (float) animation.getAnimatedValue();
-                        lastMoveY = moveY;
-                        invalidate();
-                    }
-                });
-                valueAnimator.addListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        super.onAnimationEnd(animation);
-                        //这里是滑动结束时候回调给使用者的结果值
-                        if (onChooseResulterListener != null) {
-                            onChooseResulterListener.onEndResult(resultText);
-                        }
-                    }
-                });
-                valueAnimator.setDuration(300);
-                valueAnimator.start();
-                isUp = false;
-            }
-
-            num1 = (int) -(moveY / scaleGap);
-            num2 = (moveY % scaleGap);
-        }
-        //这里是滑动时候不断回调给使用者的结果值
-        resultText = String.valueOf(new WeakReference<>(new BigDecimal((height / 2 - moveY) / (scaleGap * scaleCount))).get().setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + minScale);
-        if (onChooseResulterListener != null) {
-            onChooseResulterListener.onScrollResult(resultText);
-        }
-
-        float scaleBezierStartX = 0;
-        float scaleBezierStartY = 0;
-        float scaleBezierControlX = -250;
-        float scaleBezierControlY = height / 2;
-        float scaleBezierEndX = scaleBezierStartX;
-        float scaleBezierEndY = height;
-        mBezierHelper.init(scaleBezierStartX, scaleBezierStartY, scaleBezierControlX, scaleBezierControlY, scaleBezierEndX, scaleBezierEndY);
-        //绘制当前屏幕可见刻度,不需要裁剪屏幕,while循环只会执行·屏幕宽度/刻度宽度·次
-        canvas.translate(0, num2);    //不加该偏移的话，滑动时刻度不会落在0~1之间只会落在整数上面,其实这个都能设置一种模式了，毕竟初衷就是指针不会落在小数上面
-        int i = 0;
-        float offsetX = 0;
-        while (rulerBottom < height) {
-            if (i == 0) {
-                offsetX = mBezierHelper.getX(1f * (0 - num2) / height);
-            }
-            if (num1 % scaleCount == 0) {
-                if ((moveY >= 0 && rulerBottom < moveY - scaleGap) || height / 2 - rulerBottom <= getWhichScalMoveY(maxScale + 1) - moveY) {   //去除上下边界
-
-                } else {
-                    String displayContent = num1 / scaleCount + minScale + "";
-                    canvas.drawLine(offsetX, 0, offsetX - midScaleWidth, 0, midScalePaint);
-                    scaleNumPaint.getTextBounds(displayContent, 0, displayContent.length(), scaleNumRect);
-                    canvas.drawText(displayContent,
-                            offsetX - lagScaleWidth - scaleNumRect.width(),
-                            +scaleNumRect.height() / 2,
-                            scaleNumPaint);
-                }
-            } else {
-                if ((moveY >= 0 && rulerBottom < moveY) || height / 2 - rulerBottom < getWhichScalMoveY(maxScale) - moveY) {   //去除左右边界
-
-                } else {
-                    canvas.drawLine(offsetX, 0, offsetX - smallScaleWidth, 0, smallScalePaint);
-                }
-            }
-            ++num1;
-            rulerBottom += scaleGap;
-//            float per = 1f * rulerBottom / height;
-//            StringBuffer sb = new StringBuffer();
-//            sb.append("rulerBottom=").append(rulerBottom).append("      ")
-//                    .append("height=").append(height).append("      ")
-//                    .append("rulerBottom/height=").append(per).append("       ")
-//                    .append("x=").append(mBezierHelper.getX(per));
-//            Log.d(TAG, sb.toString());
-            offsetX = mBezierHelper.getX(1f * rulerBottom / height);
-            i++;
-            canvas.translate(0, scaleGap);
-        }
-        canvas.restore();
-        //绘制屏幕中间用来选中刻度的最大刻度
-        canvas.drawLine(0, height / 2, -lagScaleWidth, height / 2, lagScalePaint);
-
-    }
-
-    private void drawBg(Canvas canvas) {
-        bgRect.set(0, 0, width, height);
-        if (isBgRoundRect) {
-            canvas.drawRoundRect(bgRect, 20, 20, bgPaint); //20->椭圆的用于圆形角x-radius
-        } else {
-            canvas.drawRect(bgRect, bgPaint);
-        }
     }
 
     public interface OnChooseResulterListener {

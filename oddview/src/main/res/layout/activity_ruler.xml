@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000"
     android:orientation="vertical">
 
     <com.lewish.start.oddview.RulerView
@@ -37,7 +36,7 @@
     <com.lewish.start.oddview.VerticalRulerView
         android:id="@+id/mRv"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="250dp"
         android:layout_marginTop="5dp"
         lsp:bgColor="#fcfffc"
         lsp:firstScale="20"
@@ -53,7 +52,7 @@
         lsp:rulerToResultgap="30dp"
         lsp:rulerWidth="50dp"
         lsp:scaleCount="2"
-        lsp:scaleGap="40dp"
+        lsp:scaleGap="20dp"
         lsp:scaleNumColor="#666666"
         lsp:scaleNumTextSize="16sp"
         lsp:showScaleResult="true"

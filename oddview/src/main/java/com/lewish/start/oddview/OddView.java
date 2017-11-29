@@ -117,10 +117,13 @@ public class OddView extends View {
     private void loadAttributeSet(Context context, AttributeSet attrs, int defStyleAttr) {
         TypedArray typedArray = context.obtainStyledAttributes(attrs,
                 R.styleable.OddView);
-        rightAreaColor = typedArray.getColor(R.styleable.OddView_rightAreaColor, Color.parseColor(DEFAULT_RIGHTAREA_COLOR));
-        middleAreaColor = typedArray.getColor(R.styleable.OddView_middleAreaColor, Color.parseColor(DEFAULT_MIDDLEAREA_COLOR));
-        leftAreaColor = typedArray.getColor(R.styleable.OddView_leftAreaColor, Color.parseColor(DEFAULT_LEFTAREA_COLOR));
-        selectedColor = typedArray.getColor(R.styleable.OddView_selectedColor, Color.parseColor(DEFAULT_SELECTED_COLOR));
+//        rightAreaColor = typedArray.getColor(R.styleable.OddView_rightAreaColor, Color.parseColor(DEFAULT_RIGHTAREA_COLOR));
+//        middleAreaColor = typedArray.getColor(R.styleable.OddView_middleAreaColor, Color.parseColor(DEFAULT_MIDDLEAREA_COLOR));
+//        leftAreaColor = typedArray.getColor(R.styleable.OddView_leftAreaColor, Color.parseColor(DEFAULT_LEFTAREA_COLOR));
+        rightAreaColor = Color.parseColor(DEFAULT_RIGHTAREA_COLOR);
+        middleAreaColor =  Color.parseColor(DEFAULT_MIDDLEAREA_COLOR);
+        leftAreaColor = Color.parseColor(DEFAULT_LEFTAREA_COLOR);
+        selectedColor = typedArray.getColor(R.styleable.OddView_selectColor, Color.parseColor(DEFAULT_SELECTED_COLOR));
 
         scaleColor = typedArray.getColor(R.styleable.OddView_scaleColor, Color.parseColor(DEFAULT_SCALE_COLOR));
         textColor = typedArray.getColor(R.styleable.OddView_numColor, Color.parseColor(DEFAULT_NUM_COLOR));
