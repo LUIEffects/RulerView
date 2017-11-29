@@ -31,9 +31,10 @@ public class VerticalRulerView extends View {
     private static final String TAG = "RulerView";
     //尺寸相关常量
     private static final int DEFAULT_SCALE_LINE_STROKE_DP = 2;
-    private static final int DEFAULT_LARGE_SCALE_STROKE_DP = 3;
+    private static final int DEFAULT_ALIGNMENT_STROKE_DP = 3;
     private static final int DEFAULT_SCALE_NUM_TEXTSIZE_SP = 16;
     private static final int DEFAULT_SCALE_GAP_DP = 20;
+    private static final int DEFAULT_SCALE_LINE_LENGTH_DP = 20;
     //颜色相关常量
     private static final String DEFAULT_RIGHTAREA_COLOR = "#4f4f4f";
     private static final String DEFAULT_MIDDLEAREA_COLOR = "#555555";
@@ -51,7 +52,9 @@ public class VerticalRulerView extends View {
     private static final int DEFAULT_MIN_SCALE = 0;
     private static final float DEFAULT_FIRST_SCALE = 50f;
     private static final int DEFAULT_MAX_SCALE = 100;
-
+    /**
+     * Xml配置参数
+     */
     //颜色
     private int bgColor = 0xfffcfffc;//背景颜色
     private int rightAreaColor;//右Arc Area颜色
@@ -60,16 +63,29 @@ public class VerticalRulerView extends View {
     private int scaleLineColor;//刻度线颜色
     private int selectedColor;//选中时的颜色
     private int scaleNumColor;//数字颜色
-
-    //线宽
+    //画笔线宽
     private float scaleLineStroke;
-    private int largeScaleStroke;
+    private int alignmentStroke;
+    //线宽
+    private int scaleLineLength;//刻度线
+    private int alignmentWidth;//准线
+    //其他配置参数
+    private int scaleNumTextSize;
+    private int scaleGap;
+    private int scaleCount;  //刻度平分多少份
+    private int minScale;
+    private int maxScale;
+    private float firstScale = DEFAULT_FIRST_SCALE;
+    private boolean isBgRoundRect = true;//是否显示圆角
+    /**
+     * 代码中变量
+     */
     //Paint
     private Paint bgPaint;//背景画笔
     private Paint mAreaPaint;//Arc区域画笔
     private Paint scaleNumPaint;//刻度数画笔
     private Paint scaleLinePaint;//刻度线画笔
-    private Paint lagScalePaint;//选中准线画笔
+    private Paint alignmentPaint;//选中准线画笔
     //Path
     private Path mRightArcPath;
     private Path mMiddleArcPath;
@@ -77,15 +93,6 @@ public class VerticalRulerView extends View {
     //Rec
     private Rect scaleNumRect;
     private RectF bgRect;
-
-    private int scaleNumTextSize;
-    private int scaleGap;
-    private int scaleCount;  //刻度平分多少份
-    private int minScale;
-    private int maxScale;
-    private float firstScale = DEFAULT_FIRST_SCALE;
-    private int rulerWidth = 50;//尺子宽度
-    private boolean isBgRoundRect = true;//是否显示圆角
     /**
      * 结果回调
      */
@@ -94,15 +101,9 @@ public class VerticalRulerView extends View {
     private VelocityTracker velocityTracker = VelocityTracker.obtain();
     private String resultText = String.valueOf(firstScale);
 
-
-    private int height, width;
-    private int smallScaleWidth;
-    private int midScaleWidth;
-    private int lagScaleWidth;
-
-
     //计算逻辑相关变量
     private int rulerBottom = 0;
+    private int height, width;
     private float downY;
     private float moveY = 0;
     private float currentY;
@@ -134,43 +135,37 @@ public class VerticalRulerView extends View {
     private void setAttr(AttributeSet attrs, int defStyleAttr) {
 
         TypedArray a = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.RulerView, defStyleAttr, 0);
-
-        rulerWidth = a.getDimensionPixelSize(R.styleable.RulerView_rulerWidth, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, rulerWidth, getResources().getDisplayMetrics()));
-
-        scaleCount = a.getInt(R.styleable.RulerView_scaleCount, DEFAULT_SCALE_COUNT);
-
-        scaleGap = a.getDimensionPixelSize(R.styleable.RulerView_scaleGap, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, DEFAULT_SCALE_GAP_DP, getResources().getDisplayMetrics()));
-
-        minScale = a.getInt(R.styleable.RulerView_minScale, DEFAULT_MIN_SCALE);
-
-        firstScale = a.getFloat(R.styleable.RulerView_firstScale, DEFAULT_FIRST_SCALE);
-
-        maxScale = a.getInt(R.styleable.RulerView_maxScale, DEFAULT_MAX_SCALE);
-
+        /**
+         * 颜色
+         */
         bgColor = a.getColor(R.styleable.RulerView_bgColor, bgColor);
-
-
-        largeScaleStroke = a.getDimensionPixelSize(R.styleable.RulerView_largeScaleStroke, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, DEFAULT_LARGE_SCALE_STROKE_DP, getResources().getDisplayMetrics()));
-        scaleNumTextSize = a.getDimensionPixelSize(R.styleable.RulerView_scaleNumTextSize, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_SP, DEFAULT_SCALE_NUM_TEXTSIZE_SP, getResources().getDisplayMetrics()));
-
-        isBgRoundRect = a.getBoolean(R.styleable.RulerView_isBgRoundRect, isBgRoundRect);
-
-        scaleLineColor = a.getColor(R.styleable.RulerView_scaleLineColor, Color.parseColor(DEFAULT_SCALE_LINE_COLOR));
-
-        scaleLineStroke = a.getDimension(R.styleable.RulerView_scaleLineStroke, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, DEFAULT_SCALE_LINE_STROKE_DP, getResources().getDisplayMetrics()));
-
-        selectedColor = a.getColor(R.styleable.RulerView_selectedColor, Color.parseColor(DEFAULT_SELECTED_COLOR));
-        scaleNumColor = a.getColor(R.styleable.RulerView_scaleNumColor, Color.parseColor(DEFAULT_SCALE_NUM_COLOR));
-        //矩形区域相关
         rightAreaColor = a.getColor(R.styleable.RulerView_rightAreaColor, Color.parseColor(DEFAULT_RIGHTAREA_COLOR));
         middleAreaColor = a.getColor(R.styleable.RulerView_middleAreaColor, Color.parseColor(DEFAULT_MIDDLEAREA_COLOR));
         leftAreaColor = a.getColor(R.styleable.RulerView_leftAreaColor, Color.parseColor(DEFAULT_LEFTAREA_COLOR));
-
+        scaleLineColor = a.getColor(R.styleable.RulerView_scaleLineColor, Color.parseColor(DEFAULT_SCALE_LINE_COLOR));
+        selectedColor = a.getColor(R.styleable.RulerView_selectedColor, Color.parseColor(DEFAULT_SELECTED_COLOR));
+        scaleNumColor = a.getColor(R.styleable.RulerView_scaleNumColor, Color.parseColor(DEFAULT_SCALE_NUM_COLOR));
+        /**
+         * 尺寸
+         */
+        scaleGap = a.getDimensionPixelSize(R.styleable.RulerView_scaleGap, (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, DEFAULT_SCALE_GAP_DP, getResources().getDisplayMetrics()));
+        scaleLineLength = a.getDimensionPixelSize(R.styleable.RulerView_scaleLineLength, (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, DEFAULT_SCALE_LINE_LENGTH_DP, getResources().getDisplayMetrics()));
+        scaleNumTextSize = a.getDimensionPixelSize(R.styleable.RulerView_scaleNumTextSize, (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP, DEFAULT_SCALE_NUM_TEXTSIZE_SP, getResources().getDisplayMetrics()));
+        scaleLineStroke = a.getDimensionPixelSize(R.styleable.RulerView_scaleLineStroke, (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, DEFAULT_SCALE_LINE_STROKE_DP, getResources().getDisplayMetrics()));
+        alignmentStroke = a.getDimensionPixelSize(R.styleable.RulerView_largeScaleStroke, (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, DEFAULT_ALIGNMENT_STROKE_DP, getResources().getDisplayMetrics()));
+        /**
+         * 配置参数
+         */
+        minScale = a.getInt(R.styleable.RulerView_minScale, DEFAULT_MIN_SCALE);
+        firstScale = a.getFloat(R.styleable.RulerView_firstScale, DEFAULT_FIRST_SCALE);
+        maxScale = a.getInt(R.styleable.RulerView_maxScale, DEFAULT_MAX_SCALE);
+        scaleCount = a.getInt(R.styleable.RulerView_scaleCount, DEFAULT_SCALE_COUNT);
+        isBgRoundRect = a.getBoolean(R.styleable.RulerView_isBgRoundRect, isBgRoundRect);
         a.recycle();
     }
 
@@ -185,11 +180,11 @@ public class VerticalRulerView extends View {
         mAreaPaint.setStyle(Paint.Style.FILL);
         mAreaPaint.setStrokeWidth(5);
         //画准线的画笔
-        lagScalePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        lagScalePaint.setColor(selectedColor);
-        lagScalePaint.setStyle(Paint.Style.FILL);
-        lagScalePaint.setStrokeCap(Paint.Cap.ROUND);
-        lagScalePaint.setStrokeWidth(largeScaleStroke);
+        alignmentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        alignmentPaint.setColor(selectedColor);
+        alignmentPaint.setStyle(Paint.Style.FILL);
+        alignmentPaint.setStrokeCap(Paint.Cap.ROUND);
+        alignmentPaint.setStrokeWidth(alignmentStroke);
         //画刻度线的笔
         scaleLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         scaleLinePaint.setColor(scaleLineColor);
@@ -208,9 +203,7 @@ public class VerticalRulerView extends View {
         mMiddleArcPath = new Path();
         mLeftArcPath = new Path();
 
-        smallScaleWidth = rulerWidth / 4;
-        midScaleWidth = rulerWidth / 2;
-        lagScaleWidth = rulerWidth / 2 + 5;
+        alignmentWidth = scaleLineLength + 5;
         valueAnimator = new ValueAnimator();
         mBezierHelper = new BezierHelper();
     }
@@ -340,7 +333,7 @@ public class VerticalRulerView extends View {
         float scaleBezierEndX = scaleBezierStartX;
         float scaleBezierEndY = height;
         mBezierHelper.init(scaleBezierStartX, scaleBezierStartY, scaleBezierControlX, scaleBezierControlY, scaleBezierEndX, scaleBezierEndY);
-//        mBezierHelper.drawPath(canvas,lagScalePaint);
+//        mBezierHelper.drawPath(canvas,alignmentPaint);
         //绘制当前屏幕可见刻度,不需要裁剪屏幕,while循环只会执行·屏幕宽度/刻度宽度·次
         canvas.translate(0, num2);    //不加该偏移的话，滑动时刻度不会落在0~1之间只会落在整数上面,其实这个都能设置一种模式了，毕竟初衷就是指针不会落在小数上面
         int i = 0;
@@ -354,10 +347,10 @@ public class VerticalRulerView extends View {
 
                 } else {
                     String displayContent = num1 / scaleCount + minScale + "";
-                    canvas.drawLine(offsetX, 0, offsetX - midScaleWidth, 0, scaleLinePaint);
+                    canvas.drawLine(offsetX, 0, offsetX - scaleLineLength, 0, scaleLinePaint);
                     scaleNumPaint.getTextBounds(displayContent, 0, displayContent.length(), scaleNumRect);
                     canvas.drawText(displayContent,
-                            offsetX - lagScaleWidth - scaleNumRect.width(),
+                            offsetX - alignmentWidth - scaleNumRect.width(),
                             +scaleNumRect.height() / 2,
                             scaleNumPaint);
                 }
@@ -365,7 +358,7 @@ public class VerticalRulerView extends View {
                 if ((moveY >= 0 && rulerBottom < moveY) || height / 2 - rulerBottom < getWhichScalMoveY(maxScale) - moveY) {   //去除左右边界
 
                 } else {
-                    canvas.drawLine(offsetX, 0, offsetX - smallScaleWidth, 0, scaleLinePaint);
+                    canvas.drawLine(offsetX, 0, offsetX - scaleLineLength / 2, 0, scaleLinePaint);
                 }
             }
             ++num1;
@@ -383,9 +376,9 @@ public class VerticalRulerView extends View {
         }
         canvas.restore();
         //绘制屏幕中间用来选中刻度的最大刻度
-//        canvas.drawLine(0, height / 2, -lagScaleWidth, height / 2, lagScalePaint);
+//        canvas.drawLine(0, height / 2, -alignmentWidth, height / 2, alignmentPaint);
         float xOffset = mBezierHelper.getX(0.5f);
-        canvas.drawLine(xOffset, height / 2, xOffset - lagScaleWidth, height / 2, lagScalePaint);
+        canvas.drawLine(xOffset, height / 2, xOffset - alignmentWidth, height / 2, alignmentPaint);
 
     }
 

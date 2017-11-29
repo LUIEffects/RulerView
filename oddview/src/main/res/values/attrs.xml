@@ -44,6 +44,7 @@
         <attr name="scaleLineColor" format="color" />
         <attr name="scaleLineStroke" format="dimension" />
         <attr name="selectedColor" format="color" />
+        <attr name="scaleLineLength" format="dimension"/>
     </declare-styleable>
 
     <!--<declare-styleable name="VerticalRulerView">-->
