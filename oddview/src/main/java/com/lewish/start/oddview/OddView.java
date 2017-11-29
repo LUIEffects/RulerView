@@ -10,7 +10,6 @@ import android.graphics.Path;
 import android.graphics.PathMeasure;
 import android.graphics.Rect;
 import android.graphics.Typeface;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -103,11 +102,11 @@ public class OddView extends View {
         super(context, null);
     }
 
-    public OddView(Context context, @Nullable AttributeSet attrs) {
+    public OddView(Context context,  AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public OddView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public OddView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mContext = context;
         mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();

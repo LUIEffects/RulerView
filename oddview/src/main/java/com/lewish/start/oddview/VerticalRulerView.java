@@ -9,7 +9,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -122,15 +121,20 @@ public class VerticalRulerView extends View {
     private int bottomScroll;
     private int yVelocity;
 
+//    private Path mScaleBezierPath;
+//    private PathMeasure mScaleBezierPathMeasure;
+//    private float mScaleBezierPos[];
+    private BezierHelper mBezierHelper;
+
     public VerticalRulerView(Context context) {
         this(context, null);
     }
 
-    public VerticalRulerView(Context context, @Nullable AttributeSet attrs) {
+    public VerticalRulerView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public VerticalRulerView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public VerticalRulerView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         setAttr(attrs, defStyleAttr);
         init();
@@ -221,6 +225,10 @@ public class VerticalRulerView extends View {
         lagScaleWidth = rulerWidth / 2 + 5;
         valueAnimator = new ValueAnimator();
 
+//        mScaleBezierPath = new Path();
+//        mScaleBezierPathMeasure = new PathMeasure();
+//        mScaleBezierPos = new float[2];
+        mBezierHelper = new BezierHelper();
     }
 
     @Override
@@ -238,7 +246,17 @@ public class VerticalRulerView extends View {
     protected void onDraw(Canvas canvas) {
         drawBg(canvas);
         drawScaleAndNum(canvas);
+//        drawBezier(canvas);
     }
+
+//    private void drawBezier(Canvas canvas) {
+//        int scaleBezierStartX = width / 2;
+//        int scaleBezierControlX = width / 2 - 250;
+//        mScaleBezierPath.moveTo(scaleBezierStartX, height);
+//        mScaleBezierPath.quadTo(scaleBezierControlX, height / 2, scaleBezierStartX, 0);
+//        mScaleBezierPathMeasure.setPath(mScaleBezierPath, false);
+//        canvas.drawPath(mScaleBezierPath, midScalePaint);
+//    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -367,23 +385,48 @@ public class VerticalRulerView extends View {
             num1 = (int) -(moveY / scaleGap);
             num2 = (moveY % scaleGap);
         }
-        canvas.translate(0, num2);    //不加该偏移的话，滑动时刻度不会落在0~1之间只会落在整数上面,其实这个都能设置一种模式了，毕竟初衷就是指针不会落在小数上面
         //这里是滑动时候不断回调给使用者的结果值
         resultText = String.valueOf(new WeakReference<>(new BigDecimal((height / 2 - moveY) / (scaleGap * scaleCount))).get().setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + minScale);
         if (onChooseResulterListener != null) {
             onChooseResulterListener.onScrollResult(resultText);
         }
+//        canvas.drawLine(0, 0, 50, 0, midScalePaint);
+
+
+        float scaleBezierStartX = 0;
+        float scaleBezierStartY = 0;
+        float scaleBezierControlX = -250;
+        float scaleBezierControlY = height / 2;
+        float scaleBezierEndX = scaleBezierStartX;
+        float scaleBezierEndY = height;
+//        mScaleBezierPath.moveTo(scaleBezierStartX, scaleBezierStartY);
+//        mScaleBezierPath.quadTo(scaleBezierControlX, scaleBezierControlY, scaleBezierEndX, scaleBezierEndY);
+//        mScaleBezierPathMeasure.setPath(mScaleBezierPath, false);
+//        float pathLength = mScaleBezierPathMeasure.getLength();
+//        float targetPer = 1f;
+//        mScaleBezierPathMeasure.getPosTan(pathLength * targetPer, mScaleBezierPos, null);
+//        mScaleBezierPathMeasure.getSegment(0, pathLength * targetPer, mScaleBezierPath, true);
+////        canvas.drawPath(mScaleBezierPath, midScalePaint);
+
+        mBezierHelper.init(scaleBezierStartX,scaleBezierStartY,scaleBezierControlX,scaleBezierControlY,scaleBezierEndX,scaleBezierEndY);
+//        float[] pos = mBezierHelper.getPos(1f);
+//        canvas.drawLine(pos[0], pos[1], pos[0] + 50, pos[1], midScalePaint);
+//        mBezierHelper.drawPath(canvas,midScalePaint);
+
         //绘制当前屏幕可见刻度,不需要裁剪屏幕,while循环只会执行·屏幕宽度/刻度宽度·次
+        canvas.translate(0, num2);    //不加该偏移的话，滑动时刻度不会落在0~1之间只会落在整数上面,其实这个都能设置一种模式了，毕竟初衷就是指针不会落在小数上面
+        int i = 0;
+        float offsetX = 0;
         while (rulerBottom < height) {
             if (num1 % scaleCount == 0) {
                 if ((moveY >= 0 && rulerBottom < moveY - scaleGap) || height / 2 - rulerBottom <= getWhichScalMoveY(maxScale + 1) - moveY) {   //去除上下边界
                     Log.d(TAG, "drawScaleAndNum: ");
                 } else {
                     String displayContent = num1 / scaleCount + minScale + "";
-                    canvas.drawLine(0, 0, -midScaleWidth, 0, midScalePaint);
+                    canvas.drawLine(offsetX, 0, offsetX-midScaleWidth, 0, midScalePaint);
                     scaleNumPaint.getTextBounds(displayContent, 0, displayContent.length(), scaleNumRect);
                     canvas.drawText(displayContent,
-                            -lagScaleWidth - scaleNumRect.width(),
+                            offsetX-lagScaleWidth - scaleNumRect.width(),
                             +scaleNumRect.height() / 2,
                             scaleNumPaint);
                 }
@@ -391,11 +434,21 @@ public class VerticalRulerView extends View {
                 if ((moveY >= 0 && rulerBottom < moveY) || height / 2 - rulerBottom < getWhichScalMoveY(maxScale) - moveY) {   //去除左右边界
                     Log.d(TAG, "drawScaleAndNum: ");
                 } else {
-                    canvas.drawLine(0, 0, -smallScaleWidth, 0, smallScalePaint);
+                    canvas.drawLine(offsetX, 0, offsetX-smallScaleWidth, 0, smallScalePaint);
                 }
             }
             ++num1;
             rulerBottom += scaleGap;
+            float per = 1f * rulerBottom / height;
+            StringBuffer sb = new StringBuffer();
+            sb.append("rulerBottom=").append(rulerBottom).append("      ")
+                    .append("height=").append(height).append("      ")
+                    .append("rulerBottom/height=").append(per).append("       ")
+                    .append("x=").append(mBezierHelper.getX(per));
+            Log.d(TAG, sb.toString());
+            float x = mBezierHelper.getX(1f * rulerBottom / height);
+            offsetX = x;
+            i++;
             canvas.translate(0, scaleGap);
         }
         canvas.restore();
