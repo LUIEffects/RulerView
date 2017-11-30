@@ -51,7 +51,7 @@ public class VerticalRulerView extends View {
     private static final int DEFAULT_MIN_SCALE = 0;
     private static final float DEFAULT_FIRST_SCALE = 50f;
     private static final int DEFAULT_MAX_SCALE = 100;
-    private static final float DEFAULT_ALIGNMENT_POS = 1f / 8;
+    private static final float DEFAULT_ALIGNMENT_POS = 1f / 8;//刻度线位置
     /**
      * Xml配置参数
      */
@@ -354,15 +354,18 @@ public class VerticalRulerView extends View {
             if ((moveY >= 0 && rulerBottom < moveY - scaleGap) || height * DEFAULT_ALIGNMENT_POS - rulerBottom <= getWhichScalMoveY(maxScale + 1) - moveY) {   //去除上下边界
 
             } else {
+                //取内容
                 String displayContent = num1 / scaleCount + minScale + "";
-                canvas.drawLine(offsetX, rulerBottom, offsetX - scaleLineLength / 2, rulerBottom, scaleLinePaint);
+                //画长线
+                canvas.drawLine(offsetX, rulerBottom, offsetX - scaleLineLength, rulerBottom, scaleLinePaint);
                 scaleNumPaint.getTextBounds(displayContent, 0, displayContent.length(), scaleNumRect);
                 canvas.drawText(displayContent,
                         offsetX - alignmentWidth - scaleNumRect.width(),
                         rulerBottom + scaleNumRect.height() / 2,
                         scaleNumPaint);
 
-                canvas.drawLine(offsetX2, rulerBottom + scaleGap / 2, offsetX2 - scaleLineLength, rulerBottom + scaleGap / 2, scaleLinePaint);
+                //画短线
+                canvas.drawLine(offsetX2, rulerBottom + scaleGap / 2, offsetX2 - scaleLineLength/2, rulerBottom + scaleGap / 2, scaleLinePaint);
 
             }
             ++num1;
