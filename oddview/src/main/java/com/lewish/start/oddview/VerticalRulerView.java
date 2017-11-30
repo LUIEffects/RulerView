@@ -20,6 +20,8 @@ import android.view.animation.DecelerateInterpolator;
 
 import java.lang.ref.WeakReference;
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * author: sundong
@@ -114,6 +116,9 @@ public class VerticalRulerView extends View {
     private int bottomScroll;
     private int yVelocity;
     private BezierHelper mBezierHelper;
+
+    //业务逻辑
+    private List<Integer> mList = Arrays.asList(500, 1000, 1500, 2000);
 
     public VerticalRulerView(Context context) {
         this(context, null);
@@ -330,6 +335,7 @@ public class VerticalRulerView extends View {
             num2 = (moveY % scaleGap);
         }
         //这里是滑动时候不断回调给使用者的结果值
+
         resultText = String.valueOf(new WeakReference<>(new BigDecimal((height * DEFAULT_ALIGNMENT_POS - moveY) / (scaleGap * scaleCount))).get().setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + minScale);
         if (onChooseResulterListener != null) {
             onChooseResulterListener.onScrollResult(resultText);
@@ -355,7 +361,8 @@ public class VerticalRulerView extends View {
 
             } else {
                 //取内容
-                String displayContent = num1 / scaleCount + minScale + "";
+                int scaleNum = num1 / scaleCount + minScale;
+                String displayContent = mList.get(scaleNum % 4).toString();
                 //画长线
                 canvas.drawLine(offsetX, rulerBottom, offsetX - scaleLineLength, rulerBottom, scaleLinePaint);
                 scaleNumPaint.getTextBounds(displayContent, 0, displayContent.length(), scaleNumRect);
@@ -365,7 +372,7 @@ public class VerticalRulerView extends View {
                         scaleNumPaint);
 
                 //画短线
-                canvas.drawLine(offsetX2, rulerBottom + scaleGap / 2, offsetX2 - scaleLineLength/2, rulerBottom + scaleGap / 2, scaleLinePaint);
+                canvas.drawLine(offsetX2, rulerBottom + scaleGap / 2, offsetX2 - scaleLineLength / 2, rulerBottom + scaleGap / 2, scaleLinePaint);
 
             }
             ++num1;
