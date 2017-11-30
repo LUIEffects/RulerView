@@ -86,6 +86,7 @@ public class VerticalRulerView extends View {
     private Paint scaleNumPaint;//刻度数画笔
     private Paint scaleLinePaint;//刻度线画笔
     private Paint alignmentPaint;//选中准线画笔
+    private Paint debugPaint;
     //Path
     private Path mRightArcPath;
     private Path mMiddleArcPath;
@@ -206,6 +207,13 @@ public class VerticalRulerView extends View {
         alignmentWidth = scaleLineLength + 5;
         valueAnimator = new ValueAnimator();
         mBezierHelper = new BezierHelper();
+
+        //调试
+        debugPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        debugPaint.setColor(Color.RED);
+        debugPaint.setStyle(Paint.Style.STROKE);
+        debugPaint.setTextSize(20);
+        debugPaint.setStrokeWidth(5);
     }
 
     @Override
@@ -281,7 +289,6 @@ public class VerticalRulerView extends View {
         }
         num1 = -(int) (moveY / scaleGap);//小刻度值
         num2 = (moveY % scaleGap);//偏移量
-        canvas.save();
         rulerBottom = 0;
         if (isUp) {   //这部分代码主要是计算手指抬起时，惯性滑动结束时，刻度需要停留的位置
             num2 = ((moveY - height / 2 % scaleGap) % scaleGap);
@@ -333,11 +340,10 @@ public class VerticalRulerView extends View {
         float scaleBezierEndX = scaleBezierStartX;
         float scaleBezierEndY = height;
         mBezierHelper.init(scaleBezierStartX, scaleBezierStartY, scaleBezierControlX, scaleBezierControlY, scaleBezierEndX, scaleBezierEndY);
-//        mBezierHelper.drawPath(canvas,alignmentPaint);
         //绘制当前屏幕可见刻度,不需要裁剪屏幕,while循环只会执行·屏幕宽度/刻度宽度·次
-        canvas.translate(0, num2);    //不加该偏移的话，滑动时刻度不会落在0~1之间只会落在整数上面,其实这个都能设置一种模式了，毕竟初衷就是指针不会落在小数上面
         int i = 0;
         float offsetX = 0;
+        rulerBottom = (int) num2;
         while (rulerBottom < height) {
             if (i == 0) {
                 offsetX = mBezierHelper.getX(1f * (0 - num2) / height);
@@ -347,34 +353,25 @@ public class VerticalRulerView extends View {
 
                 } else {
                     String displayContent = num1 / scaleCount + minScale + "";
-                    canvas.drawLine(offsetX, 0, offsetX - scaleLineLength, 0, scaleLinePaint);
+                    canvas.drawLine(offsetX, rulerBottom, offsetX - scaleLineLength, rulerBottom, scaleLinePaint);
                     scaleNumPaint.getTextBounds(displayContent, 0, displayContent.length(), scaleNumRect);
                     canvas.drawText(displayContent,
                             offsetX - alignmentWidth - scaleNumRect.width(),
-                            +scaleNumRect.height() / 2,
+                            rulerBottom + scaleNumRect.height() / 2,
                             scaleNumPaint);
                 }
             } else {
                 if ((moveY >= 0 && rulerBottom < moveY) || height / 2 - rulerBottom < getWhichScalMoveY(maxScale) - moveY) {   //去除左右边界
 
                 } else {
-                    canvas.drawLine(offsetX, 0, offsetX - scaleLineLength / 2, 0, scaleLinePaint);
+                    canvas.drawLine(offsetX, rulerBottom, offsetX - scaleLineLength / 2, rulerBottom, scaleLinePaint);
                 }
             }
             ++num1;
             rulerBottom += scaleGap;
-//            float per = 1f * rulerBottom / height;
-//            StringBuffer sb = new StringBuffer();
-//            sb.append("rulerBottom=").append(rulerBottom).append("      ")
-//                    .append("height=").append(height).append("      ")
-//                    .append("rulerBottom/height=").append(per).append("       ")
-//                    .append("x=").append(mBezierHelper.getX(per));
-//            Log.d(TAG, sb.toString());
             offsetX = mBezierHelper.getX(1f * rulerBottom / height);
             i++;
-            canvas.translate(0, scaleGap);
         }
-        canvas.restore();
         //绘制屏幕中间用来选中刻度的最大刻度
 //        canvas.drawLine(0, height / 2, -alignmentWidth, height / 2, alignmentPaint);
         float xOffset = mBezierHelper.getX(0.5f);
