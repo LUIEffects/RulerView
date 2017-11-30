@@ -336,7 +336,8 @@ public class VerticalRulerView extends View {
         }
         //这里是滑动时候不断回调给使用者的结果值
 
-        resultText = String.valueOf(new WeakReference<>(new BigDecimal((height * DEFAULT_ALIGNMENT_POS - moveY) / (scaleGap * scaleCount))).get().setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + minScale);
+        resultText = String.valueOf(new WeakReference<>(new BigDecimal((height * DEFAULT_ALIGNMENT_POS - moveY) / (scaleGap * scaleCount))).get().setScale(1, BigDecimal.ROUND_HALF_UP).intValue() + minScale);
+        resultText=mList.get(Integer.parseInt(resultText) % 4).toString();
         if (onChooseResulterListener != null) {
             onChooseResulterListener.onScrollResult(resultText);
         }
@@ -363,6 +364,7 @@ public class VerticalRulerView extends View {
                 //取内容
                 int scaleNum = num1 / scaleCount + minScale;
                 String displayContent = mList.get(scaleNum % 4).toString();
+//                String displayContent = scaleNum+"";
                 //画长线
                 canvas.drawLine(offsetX, rulerBottom, offsetX - scaleLineLength, rulerBottom, scaleLinePaint);
                 scaleNumPaint.getTextBounds(displayContent, 0, displayContent.length(), scaleNumRect);
