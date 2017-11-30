@@ -51,6 +51,7 @@ public class VerticalRulerView extends View {
     private static final int DEFAULT_MIN_SCALE = 0;
     private static final float DEFAULT_FIRST_SCALE = 50f;
     private static final int DEFAULT_MAX_SCALE = 100;
+    private static final float DEFAULT_ALIGNMENT_POS = 1f / 8;
     /**
      * Xml配置参数
      */
@@ -222,6 +223,7 @@ public class VerticalRulerView extends View {
         int widthSize = MeasureSpec.getSize(widthMeasureSpec);
 
         height = heightSize + getPaddingTop() + getPaddingBottom();
+        scaleGap = height / 4;
         width = widthSize + getPaddingLeft() + getPaddingRight();
         setMeasuredDimension(width, height);
     }
@@ -234,7 +236,7 @@ public class VerticalRulerView extends View {
     }
 
     private float getWhichScalMoveY(float scale) {
-        return height / 2 - scaleGap * scaleCount * (scale - minScale);
+        return height * DEFAULT_ALIGNMENT_POS - scaleGap * scaleCount * (scale - minScale);
     }
 
     /**
@@ -290,7 +292,7 @@ public class VerticalRulerView extends View {
         num2 = (moveY % scaleGap);//偏移量
         rulerBottom = 0;
         if (isUp) {   //这部分代码主要是计算手指抬起时，惯性滑动结束时，刻度需要停留的位置
-            num2 = ((moveY - height / 2 % scaleGap) % scaleGap);
+            num2 = ((moveY - height * DEFAULT_ALIGNMENT_POS % scaleGap) % scaleGap);
             if (num2 <= 0) {
                 num2 = scaleGap - Math.abs(num2);
             }
@@ -328,7 +330,7 @@ public class VerticalRulerView extends View {
             num2 = (moveY % scaleGap);
         }
         //这里是滑动时候不断回调给使用者的结果值
-        resultText = String.valueOf(new WeakReference<>(new BigDecimal((height / 2 - moveY) / (scaleGap * scaleCount))).get().setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + minScale);
+        resultText = String.valueOf(new WeakReference<>(new BigDecimal((height * DEFAULT_ALIGNMENT_POS - moveY) / (scaleGap * scaleCount))).get().setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + minScale);
         if (onChooseResulterListener != null) {
             onChooseResulterListener.onScrollResult(resultText);
         }
@@ -347,39 +349,32 @@ public class VerticalRulerView extends View {
         while (rulerBottom < height) {
             if (i == 0) {
                 offsetX = mBezierHelper.getX(1f * (0 - num2) / height);
-                offsetX2 = mBezierHelper.getX(1f * (0 - num2-scaleGap/2) / height);
+                offsetX2 = mBezierHelper.getX(1f * (0 - num2 - scaleGap / 2) / height);
             }
-            if (num1 % scaleCount == 0) {
-                if ((moveY >= 0 && rulerBottom < moveY - scaleGap) || height / 2 - rulerBottom <= getWhichScalMoveY(maxScale + 1) - moveY) {   //去除上下边界
+            if ((moveY >= 0 && rulerBottom < moveY - scaleGap) || height * DEFAULT_ALIGNMENT_POS - rulerBottom <= getWhichScalMoveY(maxScale + 1) - moveY) {   //去除上下边界
 
-                } else {
-                    String displayContent = num1 / scaleCount + minScale + "";
-                    canvas.drawLine(offsetX, rulerBottom, offsetX - scaleLineLength, rulerBottom, scaleLinePaint);
-                    scaleNumPaint.getTextBounds(displayContent, 0, displayContent.length(), scaleNumRect);
-                    canvas.drawText(displayContent,
-                            offsetX - alignmentWidth - scaleNumRect.width(),
-                            rulerBottom + scaleNumRect.height() / 2,
-                            scaleNumPaint);
-
-                    canvas.drawLine(offsetX2, rulerBottom-scaleGap/2, offsetX2 - scaleLineLength / 2, rulerBottom-scaleGap/2, scaleLinePaint);
-                }
             } else {
-                if ((moveY >= 0 && rulerBottom < moveY) || height / 2 - rulerBottom < getWhichScalMoveY(maxScale) - moveY) {   //去除左右边界
+                String displayContent = num1 / scaleCount + minScale + "";
+                canvas.drawLine(offsetX, rulerBottom, offsetX - scaleLineLength / 2, rulerBottom, scaleLinePaint);
+                scaleNumPaint.getTextBounds(displayContent, 0, displayContent.length(), scaleNumRect);
+                canvas.drawText(displayContent,
+                        offsetX - alignmentWidth - scaleNumRect.width(),
+                        rulerBottom + scaleNumRect.height() / 2,
+                        scaleNumPaint);
 
-                } else {
-                    canvas.drawLine(offsetX, rulerBottom, offsetX - scaleLineLength / 2, rulerBottom, scaleLinePaint);
-                }
+                canvas.drawLine(offsetX2, rulerBottom + scaleGap / 2, offsetX2 - scaleLineLength, rulerBottom + scaleGap / 2, scaleLinePaint);
+
             }
             ++num1;
             rulerBottom += scaleGap;
             offsetX = mBezierHelper.getX(1f * rulerBottom / height);
-            offsetX2 = mBezierHelper.getX(1f * (rulerBottom-scaleGap/2) / height);
+            offsetX2 = mBezierHelper.getX(1f * (rulerBottom + scaleGap / 2) / height);
             i++;
         }
         //绘制屏幕中间用来选中刻度的最大刻度
 //        canvas.drawLine(0, height / 2, -alignmentWidth, height / 2, alignmentPaint);
-        float xOffset = mBezierHelper.getX(0.5f);
-        canvas.drawLine(xOffset, height / 2, xOffset - alignmentWidth, height / 2, alignmentPaint);
+        float xOffset = mBezierHelper.getX(DEFAULT_ALIGNMENT_POS);
+        canvas.drawLine(xOffset, height * DEFAULT_ALIGNMENT_POS, xOffset - alignmentWidth, height * DEFAULT_ALIGNMENT_POS, alignmentPaint);
 
     }
 
@@ -410,8 +405,8 @@ public class VerticalRulerView extends View {
             case MotionEvent.ACTION_MOVE:
                 //滑动时候,通过假设的滑动距离,做超出左边界以及右边界的限制。
                 moveY = currentY - downY + lastMoveY;
-                if (moveY >= height / 2) {
-                    moveY = height / 2;
+                if (moveY >= height * DEFAULT_ALIGNMENT_POS) {
+                    moveY = height * DEFAULT_ALIGNMENT_POS;
                 } else if (moveY <= getWhichScalMoveY(maxScale)) {
                     moveY = getWhichScalMoveY(maxScale);
                 }
@@ -443,8 +438,8 @@ public class VerticalRulerView extends View {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 moveY += (int) animation.getAnimatedValue();
-                if (moveY >= height / 2) {
-                    moveY = height / 2;
+                if (moveY >= height * DEFAULT_ALIGNMENT_POS) {
+                    moveY = height * DEFAULT_ALIGNMENT_POS;
                 } else if (moveY <= getWhichScalMoveY(maxScale)) {
                     moveY = getWhichScalMoveY(maxScale);
                 }
