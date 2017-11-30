@@ -22,10 +22,9 @@ import java.lang.ref.WeakReference;
 import java.math.BigDecimal;
 
 /**
- * Created by lsp on 2017/10/13 10 47
- * Email:6161391073@qq.com
+ * author: sundong
+ * created at 2017/11/30 9:36
  */
-
 public class VerticalRulerView extends View {
 
     private static final String TAG = "RulerView";
@@ -343,10 +342,12 @@ public class VerticalRulerView extends View {
         //绘制当前屏幕可见刻度,不需要裁剪屏幕,while循环只会执行·屏幕宽度/刻度宽度·次
         int i = 0;
         float offsetX = 0;
+        float offsetX2 = 0;
         rulerBottom = (int) num2;
         while (rulerBottom < height) {
             if (i == 0) {
                 offsetX = mBezierHelper.getX(1f * (0 - num2) / height);
+                offsetX2 = mBezierHelper.getX(1f * (0 - num2-scaleGap/2) / height);
             }
             if (num1 % scaleCount == 0) {
                 if ((moveY >= 0 && rulerBottom < moveY - scaleGap) || height / 2 - rulerBottom <= getWhichScalMoveY(maxScale + 1) - moveY) {   //去除上下边界
@@ -359,6 +360,8 @@ public class VerticalRulerView extends View {
                             offsetX - alignmentWidth - scaleNumRect.width(),
                             rulerBottom + scaleNumRect.height() / 2,
                             scaleNumPaint);
+
+                    canvas.drawLine(offsetX2, rulerBottom-scaleGap/2, offsetX2 - scaleLineLength / 2, rulerBottom-scaleGap/2, scaleLinePaint);
                 }
             } else {
                 if ((moveY >= 0 && rulerBottom < moveY) || height / 2 - rulerBottom < getWhichScalMoveY(maxScale) - moveY) {   //去除左右边界
@@ -370,6 +373,7 @@ public class VerticalRulerView extends View {
             ++num1;
             rulerBottom += scaleGap;
             offsetX = mBezierHelper.getX(1f * rulerBottom / height);
+            offsetX2 = mBezierHelper.getX(1f * (rulerBottom-scaleGap/2) / height);
             i++;
         }
         //绘制屏幕中间用来选中刻度的最大刻度
