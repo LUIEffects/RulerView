@@ -36,6 +36,7 @@ public class BezierHelper {
         this.scaleBezierControlY = scaleBezierControlY;
         this.scaleBezierEndX = scaleBezierEndX;
         this.scaleBezierEndY = scaleBezierEndY;
+        mScaleBezierPath.reset();
         mScaleBezierPath.moveTo(scaleBezierStartX, scaleBezierStartY);
         mScaleBezierPath.quadTo(scaleBezierControlX, scaleBezierControlY, scaleBezierEndX, scaleBezierEndY);
         mScaleBezierPathMeasure.setPath(mScaleBezierPath, false);

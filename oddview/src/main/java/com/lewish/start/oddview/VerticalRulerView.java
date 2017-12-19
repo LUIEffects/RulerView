@@ -251,6 +251,7 @@ public class VerticalRulerView extends View {
         //画最右边的
         int rightStartPointX = width + RIGHT_BEZIER_OFFSET;
         int rightControlPointX = width + RIGHT_BEZIER_CONTROL_POINT_OFFSET;
+        mRightArcPath.reset();
         mRightArcPath.moveTo(rightStartPointX, height);
         mRightArcPath.lineTo(width, height);
         mRightArcPath.lineTo(width, 0);
@@ -262,6 +263,7 @@ public class VerticalRulerView extends View {
         //画中间的
         int middleStartPointX = rightStartPointX + MIDDLE_BEZIER_REL_OFFSET;
         int middleControlPointX = rightControlPointX + MIDDLE_BEZIER_REL_OFFSET;
+        mMiddleArcPath.reset();
         mMiddleArcPath.moveTo(middleStartPointX, height);
         mMiddleArcPath.lineTo(rightStartPointX, height);
         mMiddleArcPath.quadTo(rightControlPointX, height / 2, rightStartPointX, 0);
@@ -273,6 +275,7 @@ public class VerticalRulerView extends View {
         //画最左边的
         int leftStartPointX = middleStartPointX + LEFT_BEZIER_REL_OFFSET;
         int leftControlPointX = middleControlPointX + LEFT_BEZIER_REL_OFFSET;
+        mLeftArcPath.reset();
         mLeftArcPath.moveTo(leftStartPointX, height);
         mLeftArcPath.lineTo(middleStartPointX, height);
         mLeftArcPath.quadTo(middleControlPointX, height / 2, middleStartPointX, 0);
@@ -389,6 +392,7 @@ public class VerticalRulerView extends View {
         //绘制屏幕中间用来选中刻度的最大刻度
 //        canvas.drawLine(0, height / 2, -alignmentWidth, height / 2, alignmentPaint);
         float xOffset = mBezierHelper.getX(DEFAULT_ALIGNMENT_POS);
+
         canvas.drawLine(xOffset, height * DEFAULT_ALIGNMENT_POS, xOffset - scaleLineLength, height * DEFAULT_ALIGNMENT_POS, alignmentPaint);
 //        canvas.drawPoint(,alignmentPaint);
         canvas.drawCircle(xOffset+LEFT_BEZIER_REL_OFFSET+10,height * DEFAULT_ALIGNMENT_POS,5,alignmentPaint);
