@@ -39,7 +39,7 @@ public class RulerView extends View {
     /**
      * 刻度平分多少份
      */
-    private int scaleCount = 10;  //刻度评分多少份
+    private int scaleCount = 2;  //刻度评分多少份
     /**
      * 刻度间距
      */
@@ -391,6 +391,11 @@ public class RulerView extends View {
         valueAnimator.start();
     }
 
+    /**
+     * 计算出屏幕左侧相较于内容左侧的偏移距离
+     * @param scale
+     * @return
+     */
     private float getWhichScalMovex(float scale) {
 
         return width / 2 - scaleGap * scaleCount * (scale - minScale);
@@ -403,17 +408,17 @@ public class RulerView extends View {
         float num2;
 
         if (firstScale != -1) {   //第一次进来的时候计算出默认刻度对应的假设滑动的距离moveX
-            moveX = getWhichScalMovex(firstScale);
+            moveX = getWhichScalMovex(firstScale);////如果设置了默认滑动位置，计算出需要滑动的距离
             lastMoveX = moveX;
-            firstScale = -1;
+            firstScale = -1;//将结果置为-1，下次不再计算初始位置
         }
 
-        num1 = -(int) (moveX / scaleGap);//小刻度值
-        num2 = (moveX % scaleGap);//偏移量
+        num1 = -(int) (moveX / scaleGap);//小刻度值——>左侧最小的刻度值  //滑动刻度的整数部分
+        num2 = (moveX % scaleGap);//偏移量   //滑动刻度的小数部分
 
         canvas.save();
 
-        rulerRight = 0;
+        rulerRight = 0;  //准备开始绘制当前屏幕,从最左面开始
 
         if (isUp) {   //这部分代码主要是计算手指抬起时，惯性滑动结束时，刻度需要停留的位置
             num2 = ((moveX - width / 2 % scaleGap) % scaleGap);
@@ -461,28 +466,28 @@ public class RulerView extends View {
         }
         //绘制当前屏幕可见刻度,不需要裁剪屏幕,while循环只会执行·屏幕宽度/刻度宽度·次
         while (rulerRight < width) {
-            if (num1 % scaleCount == 0) {
+            if (num1 % scaleCount == 0) {//绘制整点刻度以及文字
                 if ((moveX >= 0 && rulerRight < moveX - scaleGap) || width / 2 - rulerRight <= getWhichScalMovex(maxScale + 1) - moveX) {   //去除左右边界
-
+                //当滑动出范围的话，不绘制，去除左右边界
                 } else {
+                    //绘制刻度，绘制刻度数字
                     canvas.drawLine(0, 0, 0, midScaleHeight, midScalePaint);
                     scaleNumPaint.getTextBounds(num1 / scaleGap + minScale + "", 0, (num1 / scaleGap + minScale + "").length(), scaleNumRect);
                     canvas.drawText(num1 / scaleCount + minScale + "", -scaleNumRect.width() / 2, lagScaleHeight +
                             (rulerHeight - lagScaleHeight) / 2 + scaleNumRect.height(), scaleNumPaint);
-
-
                 }
 
             } else {
+                //绘制小数刻度
                 if ((moveX >= 0 && rulerRight < moveX) || width / 2 - rulerRight < getWhichScalMovex(maxScale) - moveX) {   //去除左右边界
-
+                //当滑动出范围的话，不绘制，去除左右边界
                 } else {
                     canvas.drawLine(0, 0, 0, smallScaleHeight, smallScalePaint);
                 }
             }
-            ++num1;
-            rulerRight += scaleGap;
-            canvas.translate(scaleGap, 0);
+            ++num1;//刻度加1
+            rulerRight += scaleGap;//绘制屏幕的距离在原有基础上+1个刻度间距
+            canvas.translate(scaleGap, 0); //移动画布到下一个刻度
         }
 
         canvas.restore();
