@@ -2,6 +2,25 @@
 
 buildscript {
     repositories {
+        maven {
+            url "http://maven.oa.com/nexus/content/groups/androidbuild/"
+        }
+
+        maven {
+            url "http://maven.oa.com/nexus/content/repositories/tencentvideo-snapshot/"
+            credentials {
+                username "qqlive"
+                password "qqlive"
+            }
+        }
+
+        maven {
+            url "http://maven.oa.com/nexus/content/repositories/tencentvideo/"
+            credentials {
+                username "qqlive"
+                password "qqlive"
+            }
+        }
         jcenter()
         maven {
             url 'https://maven.google.com/'
@@ -19,6 +38,25 @@ buildscript {
 
 allprojects {
     repositories {
+        maven {
+            url "http://maven.oa.com/nexus/content/groups/androidbuild/"
+        }
+
+        maven {
+            url "http://maven.oa.com/nexus/content/repositories/tencentvideo-snapshot/"
+            credentials {
+                username "qqlive"
+                password "qqlive"
+            }
+        }
+
+        maven {
+            url "http://maven.oa.com/nexus/content/repositories/tencentvideo/"
+            credentials {
+                username "qqlive"
+                password "qqlive"
+            }
+        }
         jcenter()
         maven { url 'https://jitpack.io' }
         google()
