@@ -316,7 +316,7 @@ public class SeekView extends View {
     protected void onDraw(Canvas canvas) {
         drawBg(canvas);
         drawScaleAndNum(canvas);
-        drawResultText(canvas, resultText);
+//        drawResultText(canvas, resultText);
     }
 
     @Override
@@ -339,8 +339,8 @@ public class SeekView extends View {
                 moveX = currentX - downX + lastMoveX;
                 if (moveX >= 0) {
                     moveX = 0;
-                } else if (moveX <= getWhichScalMovex(maxScale)) {
-                    moveX = getWhichScalMovex(maxScale);
+                } else if (moveX <= getWhichScalMovex(maxScale)+width/2) {
+                    moveX = getWhichScalMovex(maxScale)+width/2;
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -372,8 +372,8 @@ public class SeekView extends View {
                 moveX += (int) animation.getAnimatedValue();
                 if (moveX >= 0) {
                     moveX = 0;
-                } else if (moveX <= getWhichScalMovex(maxScale)) {
-                    moveX = getWhichScalMovex(maxScale);
+                } else if (moveX <= getWhichScalMovex(maxScale)+width/2) {
+                    moveX = getWhichScalMovex(maxScale)+width/2;
                 }
                 lastMoveX = moveX;
                 invalidate();
