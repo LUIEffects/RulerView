@@ -12,6 +12,7 @@ import android.graphics.RectF;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -27,7 +28,7 @@ import java.math.BigDecimal;
  */
 
 public class SeekView extends View {
-    private static final String TAG = "RulerView";
+    private static final String TAG = "SeekView";
     /**
      * 尺子高度
      */
@@ -122,6 +123,12 @@ public class SeekView extends View {
      */
     private boolean isBgRoundRect = true;
 
+    private int progress = 72;
+
+    private int screenStartPos;
+    private int screenEndPos;
+
+
     /**
      * 结果回调
      */
@@ -144,7 +151,7 @@ public class SeekView extends View {
     private int smallScaleHeight;
     private int midScaleHeight;
     private int lagScaleHeight;
-    private int rulerRight = 0;
+    private int curPos = 0;
     private int resultNumRight;
     private float downX;
     private float moveX = 0;
@@ -398,14 +405,14 @@ public class SeekView extends View {
      */
     private float getWhichScalMovex(float scale) {
 
-        return width / 2 - scaleGap * scaleCount * (scale - minScale);
+        return width / 2 - scaleGap * (scale - minScale);
     }
 
     private void drawScaleAndNum(Canvas canvas) {
         canvas.translate(0, (showScaleResult ? resultNumRect.height() : 0) + rulerToResultgap);//移动画布到结果值的下面
 
         int num1;//确定刻度位置
-        float num2;
+        float offsetX;
 
         if (firstScale != -1) {   //第一次进来的时候计算出默认刻度对应的假设滑动的距离moveX
             moveX = getWhichScalMovex(firstScale);////如果设置了默认滑动位置，计算出需要滑动的距离
@@ -414,21 +421,22 @@ public class SeekView extends View {
         }
 
         num1 = -(int) (moveX / scaleGap);//小刻度值——>左侧最小的刻度值  //滑动刻度的整数部分
-        num2 = (moveX % scaleGap);//偏移量   //滑动刻度的小数部分
+        screenStartPos = num1;
+        offsetX = (moveX % scaleGap);//偏移量   //滑动刻度的小数部分
 
         canvas.save();
 
-        rulerRight = 0;  //准备开始绘制当前屏幕,从最左面开始
+        curPos = 0;  //准备开始绘制当前屏幕,从最左面开始
 
         if (isUp) {   //这部分代码主要是计算手指抬起时，惯性滑动结束时，刻度需要停留的位置
-            num2 = ((moveX - width / 2 % scaleGap) % scaleGap);
-            if (num2 <= 0) {
-                num2 = scaleGap - Math.abs(num2);
+            offsetX = ((moveX - width / 2 % scaleGap) % scaleGap);
+            if (offsetX <= 0) {
+                offsetX = scaleGap - Math.abs(offsetX);
             }
-            leftScroll = (int) Math.abs(num2);
-            rightScroll = (int) (scaleGap - Math.abs(num2));
+            leftScroll = (int) Math.abs(offsetX);
+            rightScroll = (int) (scaleGap - Math.abs(offsetX));
 
-            float moveX2 = num2 <= scaleGap / 2 ? moveX - leftScroll : moveX + rightScroll;
+            float moveX2 = offsetX <= scaleGap / 2 ? moveX - leftScroll : moveX + rightScroll;
 
             if (valueAnimator != null && !valueAnimator.isRunning()) {
                 valueAnimator = ValueAnimator.ofFloat(moveX, moveX2);
@@ -456,18 +464,19 @@ public class SeekView extends View {
             }
 
             num1 = (int) -(moveX / scaleGap);
-            num2 = (moveX % scaleGap);
+            offsetX = (moveX % scaleGap);
         }
-        canvas.translate(num2, 0);    //不加该偏移的话，滑动时刻度不会落在0~1之间只会落在整数上面,其实这个都能设置一种模式了，毕竟初衷就是指针不会落在小数上面
+        canvas.translate(offsetX, 0);    //不加该偏移的话，滑动时刻度不会落在0~1之间只会落在整数上面,其实这个都能设置一种模式了，毕竟初衷就是指针不会落在小数上面
         //这里是滑动时候不断回调给使用者的结果值
-        resultText = String.valueOf(new WeakReference<>(new BigDecimal((width / 2 - moveX) / (scaleGap * scaleCount))).get().setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + minScale);
+        resultText = String.valueOf(new WeakReference<>(new BigDecimal((width / 2 - moveX) / scaleGap)).get().setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + minScale);
         if (onChooseResulterListener != null) {
             onChooseResulterListener.onScrollResult(resultText);
         }
         //绘制当前屏幕可见刻度,不需要裁剪屏幕,while循环只会执行·屏幕宽度/刻度宽度·次
-        while (rulerRight < width) {
-            if (num1 % scaleCount == 0) {//绘制整点刻度以及文字
-                if ((moveX >= 0 && rulerRight < moveX - scaleGap) || width / 2 - rulerRight <= getWhichScalMovex(maxScale + 1) - moveX) {   //去除左右边界
+        while (curPos < width) {
+            if (num1 % scaleCount == 0) {
+                //绘制整点刻度以及文字
+                if ((moveX >= 0 && curPos < moveX - scaleGap) || width / 2 - curPos <= getWhichScalMovex(maxScale + 1) - moveX) {   //去除左右边界
                 //当滑动出范围的话，不绘制，去除左右边界
                 } else {
                     //绘制刻度，绘制刻度数字
@@ -478,21 +487,29 @@ public class SeekView extends View {
                 }
 
             } else {
-                //绘制小数刻度
-                if ((moveX >= 0 && rulerRight < moveX) || width / 2 - rulerRight < getWhichScalMovex(maxScale) - moveX) {   //去除左右边界
+                //绘制分钟刻度
+                if ((moveX >= 0 && curPos < moveX) || width / 2 - curPos < getWhichScalMovex(maxScale) - moveX) {   //去除左右边界
                 //当滑动出范围的话，不绘制，去除左右边界
                 } else {
                     canvas.drawLine(0, 0, 0, smallScaleHeight, smallScalePaint);
                 }
             }
             ++num1;//刻度加1
-            rulerRight += scaleGap;//绘制屏幕的距离在原有基础上+1个刻度间距
+            curPos += scaleGap;//绘制屏幕的距离在原有基础上+1个刻度间距
             canvas.translate(scaleGap, 0); //移动画布到下一个刻度
         }
-
+        screenEndPos = num1;
         canvas.restore();
+        Log.d(TAG, "screenStartPos = "+screenStartPos+"     screenEndPos = "+screenEndPos);
+        if (progress>=screenEndPos){
+            canvas.drawLine(0,0,width,0,lagScalePaint);
+        }else if (progress<=screenStartPos){
+
+        }else {
+            canvas.drawLine(0,0,(progress-screenStartPos)*scaleGap+offsetX,0,lagScalePaint);
+        }
         //绘制屏幕中间用来选中刻度的最大刻度
-        canvas.drawLine(width / 2, 0, width / 2, lagScaleHeight, lagScalePaint);
+//        canvas.drawLine(width / 2, 0, width / 2, lagScaleHeight, lagScalePaint);
 
     }
 
