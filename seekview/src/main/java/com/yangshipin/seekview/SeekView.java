@@ -26,7 +26,7 @@ import java.math.BigDecimal;
  * Email:6161391073@qq.com
  */
 
-public class RulerView extends View {
+public class SeekView extends View {
     private static final String TAG = "RulerView";
     /**
      * 尺子高度
@@ -155,15 +155,15 @@ public class RulerView extends View {
     private int rightScroll;
     private int xVelocity;
 
-    public RulerView(Context context) {
+    public SeekView(Context context) {
         this(context, null);
     }
 
-    public RulerView(Context context, @Nullable AttributeSet attrs) {
+    public SeekView(Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public RulerView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public SeekView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         setAttr(attrs, defStyleAttr);
         init();
@@ -175,64 +175,64 @@ public class RulerView extends View {
 
     private void setAttr(AttributeSet attrs, int defStyleAttr) {
 
-        TypedArray a = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.RulerView, defStyleAttr, 0);
+        TypedArray a = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.SeekView, defStyleAttr, 0);
 
-        rulerHeight = a.getDimensionPixelSize(R.styleable.RulerView_rulerHeight, (int) TypedValue.applyDimension(
+        rulerHeight = a.getDimensionPixelSize(R.styleable.SeekView_rulerHeight, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, rulerHeight, getResources().getDisplayMetrics()));
 
-        rulerToResultgap = a.getDimensionPixelSize(R.styleable.RulerView_rulerToResultgap, (int) TypedValue.applyDimension(
+        rulerToResultgap = a.getDimensionPixelSize(R.styleable.SeekView_rulerToResultgap, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, rulerToResultgap, getResources().getDisplayMetrics()));
 
-        scaleCount = a.getInt(R.styleable.RulerView_scaleCount, scaleCount);
+        scaleCount = a.getInt(R.styleable.SeekView_scaleCount, scaleCount);
 
-        scaleGap = a.getDimensionPixelSize(R.styleable.RulerView_scaleGap, (int) TypedValue.applyDimension(
+        scaleGap = a.getDimensionPixelSize(R.styleable.SeekView_scaleGap, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, scaleGap, getResources().getDisplayMetrics()));
 
-        minScale = a.getInt(R.styleable.RulerView_minScale, minScale);
+        minScale = a.getInt(R.styleable.SeekView_minScale, minScale);
 
-        firstScale = a.getFloat(R.styleable.RulerView_firstScale, firstScale);
+        firstScale = a.getFloat(R.styleable.SeekView_firstScale, firstScale);
 
-        maxScale = a.getInt(R.styleable.RulerView_maxScale, maxScale);
+        maxScale = a.getInt(R.styleable.SeekView_maxScale, maxScale);
 
-        bgColor = a.getColor(R.styleable.RulerView_bgColor, bgColor);
+        bgColor = a.getColor(R.styleable.SeekView_bgColor, bgColor);
 
-        smallScaleColor = a.getColor(R.styleable.RulerView_smallScaleColor, smallScaleColor);
+        smallScaleColor = a.getColor(R.styleable.SeekView_smallScaleColor, smallScaleColor);
 
-        midScaleColor = a.getColor(R.styleable.RulerView_midScaleColor, midScaleColor);
+        midScaleColor = a.getColor(R.styleable.SeekView_midScaleColor, midScaleColor);
 
-        largeScaleColor = a.getColor(R.styleable.RulerView_largeScaleColor, largeScaleColor);
+        largeScaleColor = a.getColor(R.styleable.SeekView_largeScaleColor, largeScaleColor);
 
-        scaleNumColor = a.getColor(R.styleable.RulerView_scaleNumColor, scaleNumColor);
+        scaleNumColor = a.getColor(R.styleable.SeekView_scaleNumColor, scaleNumColor);
 
-        resultNumColor = a.getColor(R.styleable.RulerView_resultNumColor, resultNumColor);
+        resultNumColor = a.getColor(R.styleable.SeekView_resultNumColor, resultNumColor);
 
-        unitColor = a.getColor(R.styleable.RulerView_unitColor, unitColor);
+        unitColor = a.getColor(R.styleable.SeekView_unitColor, unitColor);
 
         String tempUnit = unit;
-        unit = a.getString(R.styleable.RulerView_unit);
+        unit = a.getString(R.styleable.SeekView_unit);
         if (TextUtils.isEmpty(unit)) {
             unit = tempUnit;
         }
 
-        smallScaleStroke = a.getDimensionPixelSize(R.styleable.RulerView_smallScaleStroke, (int) TypedValue.applyDimension(
+        smallScaleStroke = a.getDimensionPixelSize(R.styleable.SeekView_smallScaleStroke, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, smallScaleStroke, getResources().getDisplayMetrics()));
 
-        midScaleStroke = a.getDimensionPixelSize(R.styleable.RulerView_midScaleStroke, (int) TypedValue.applyDimension(
+        midScaleStroke = a.getDimensionPixelSize(R.styleable.SeekView_midScaleStroke, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, midScaleStroke, getResources().getDisplayMetrics()));
-        largeScaleStroke = a.getDimensionPixelSize(R.styleable.RulerView_largeScaleStroke, (int) TypedValue.applyDimension(
+        largeScaleStroke = a.getDimensionPixelSize(R.styleable.SeekView_largeScaleStroke, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, largeScaleStroke, getResources().getDisplayMetrics()));
-        resultNumTextSize = a.getDimensionPixelSize(R.styleable.RulerView_resultNumTextSize, (int) TypedValue.applyDimension(
+        resultNumTextSize = a.getDimensionPixelSize(R.styleable.SeekView_resultNumTextSize, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, resultNumTextSize, getResources().getDisplayMetrics()));
 
-        scaleNumTextSize = a.getDimensionPixelSize(R.styleable.RulerView_scaleNumTextSize, (int) TypedValue.applyDimension(
+        scaleNumTextSize = a.getDimensionPixelSize(R.styleable.SeekView_scaleNumTextSize, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, scaleNumTextSize, getResources().getDisplayMetrics()));
 
-        unitTextSize = a.getDimensionPixelSize(R.styleable.RulerView_unitTextSize, (int) TypedValue.applyDimension(
+        unitTextSize = a.getDimensionPixelSize(R.styleable.SeekView_unitTextSize, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, unitTextSize, getResources().getDisplayMetrics()));
 
 
-        showScaleResult = a.getBoolean(R.styleable.RulerView_showScaleResult, showScaleResult);
-        isBgRoundRect = a.getBoolean(R.styleable.RulerView_isBgRoundRect, isBgRoundRect);
+        showScaleResult = a.getBoolean(R.styleable.SeekView_showScaleResult, showScaleResult);
+        isBgRoundRect = a.getBoolean(R.styleable.SeekView_isBgRoundRect, isBgRoundRect);
 
         a.recycle();
     }

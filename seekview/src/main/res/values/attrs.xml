@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
-    <declare-styleable name="RulerView">
+    <declare-styleable name="SeekView">
         <attr name="rulerHeight" format="dimension" />               <!--尺子的高度-->
         <attr name="rulerWidth" format="dimension" />                 <!--尺子的宽度-->
         <attr name="rulerToResultgap" format="dimension" />          <!--尺子距离结果的高度-->
