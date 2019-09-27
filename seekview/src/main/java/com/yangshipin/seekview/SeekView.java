@@ -337,8 +337,8 @@ public class SeekView extends View {
             case MotionEvent.ACTION_MOVE:
                 //滑动时候,通过假设的滑动距离,做超出左边界以及右边界的限制。
                 moveX = currentX - downX + lastMoveX;
-                if (moveX >= width / 2) {
-                    moveX = width / 2;
+                if (moveX >= 0) {
+                    moveX = 0;
                 } else if (moveX <= getWhichScalMovex(maxScale)) {
                     moveX = getWhichScalMovex(maxScale);
                 }
@@ -370,8 +370,8 @@ public class SeekView extends View {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 moveX += (int) animation.getAnimatedValue();
-                if (moveX >= width / 2) {
-                    moveX = width / 2;
+                if (moveX >= 0) {
+                    moveX = 0;
                 } else if (moveX <= getWhichScalMovex(maxScale)) {
                     moveX = getWhichScalMovex(maxScale);
                 }
