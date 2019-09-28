@@ -10,7 +10,6 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -63,45 +62,18 @@ public class SeekView extends View {
      */
     private int bgColor = 0xfffcfffc;
     /**
-     * 小刻度的颜色
-     */
-    private int smallScaleColor = 0xff999999;
-    /**
-     * 中刻度的颜色
-     */
-    private int midScaleColor = 0xff666666;
-    /**
-     * 大刻度的颜色
-     */
-    private int largeScaleColor = 0xff50b586;
-    /**
      * 刻度颜色
      */
-    private int scaleNumColor = 0xff333333;
+    private int scaleColor = 0xff999999;
     /**
-     * 结果值颜色
+     * 文字颜色
      */
-    private int resultNumColor = 0xff50b586;
-    /**
-     * kg颜色
-     */
-    private String unit = "kg";
-    /**
-     * kg颜色
-     */
-    private int unitColor = 0xff50b586;
-    /**
-     * 小刻度粗细大小
-     */
-    private int smallScaleStroke = 1;
-    /**
-     * 中刻度粗细大小
-     */
-    private int midScaleStroke = 2;
+    private int txtColor = 0xff333333;
+    private int scaleStroke = 1;
     /**
      * 大刻度粗细大小
      */
-    private int largeScaleStroke = 3;
+    private int progressStroke = 3;
     /**
      * 结果字体大小
      */
@@ -110,19 +82,6 @@ public class SeekView extends View {
      * 刻度字体大小
      */
     private int scaleNumTextSize = 16;
-    /**
-     * 单位字体大小
-     */
-    private int unitTextSize = 13;
-    /**
-     * 是否显示刻度结果
-     */
-    private boolean showScaleResult = true;
-    /**
-     * 是否背景显示圆角
-     */
-    private boolean isBgRoundRect = true;
-
     private int scaleHeight = 3;
 
     private int progress = 72;
@@ -139,15 +98,12 @@ public class SeekView extends View {
     private VelocityTracker velocityTracker = VelocityTracker.obtain();
     private String resultText = String.valueOf(firstScale);
     private Paint bgPaint;
-    private Paint smallScalePaint;
-    private Paint midScalePaint;
-    private Paint lagScalePaint;
-    private Paint scaleNumPaint;
-    private Paint resultNumPaint;
-    private Paint kgPaint;
+    private Paint scalePaint;
+    private Paint progressPaint;
+    private Paint txtPaint;
+    private Paint resultValPaint;
     private Rect scaleNumRect;
     private Rect resultNumRect;
-    private Rect kgRect;
     private RectF bgRect;
     private int height, width;
     private int curPos = 0;
@@ -183,7 +139,7 @@ public class SeekView extends View {
 
         TypedArray a = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.SeekView, defStyleAttr, 0);
 
-        scaleHeight = a.getDimensionPixelSize(R.styleable.SeekView_scaleHeight,(int) TypedValue.applyDimension(
+        scaleHeight = a.getDimensionPixelSize(R.styleable.SeekView_scaleHeight, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, scaleHeight, getResources().getDisplayMetrics()));
 
         rulerHeight = a.getDimensionPixelSize(R.styleable.SeekView_rulerHeight, (int) TypedValue.applyDimension(
@@ -205,91 +161,50 @@ public class SeekView extends View {
 
         bgColor = a.getColor(R.styleable.SeekView_bgColor, bgColor);
 
-        smallScaleColor = a.getColor(R.styleable.SeekView_smallScaleColor, smallScaleColor);
+        txtColor = a.getColor(R.styleable.SeekView_txtColor, txtColor);
 
-        midScaleColor = a.getColor(R.styleable.SeekView_midScaleColor, midScaleColor);
-
-        largeScaleColor = a.getColor(R.styleable.SeekView_largeScaleColor, largeScaleColor);
-
-        scaleNumColor = a.getColor(R.styleable.SeekView_scaleNumColor, scaleNumColor);
-
-        resultNumColor = a.getColor(R.styleable.SeekView_resultNumColor, resultNumColor);
-
-        unitColor = a.getColor(R.styleable.SeekView_unitColor, unitColor);
-
-        String tempUnit = unit;
-        unit = a.getString(R.styleable.SeekView_unit);
-        if (TextUtils.isEmpty(unit)) {
-            unit = tempUnit;
-        }
-
-        smallScaleStroke = a.getDimensionPixelSize(R.styleable.SeekView_smallScaleStroke, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, smallScaleStroke, getResources().getDisplayMetrics()));
-
-        midScaleStroke = a.getDimensionPixelSize(R.styleable.SeekView_midScaleStroke, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, midScaleStroke, getResources().getDisplayMetrics()));
-        largeScaleStroke = a.getDimensionPixelSize(R.styleable.SeekView_largeScaleStroke, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, largeScaleStroke, getResources().getDisplayMetrics()));
+        progressStroke = a.getDimensionPixelSize(R.styleable.SeekView_progressStroke, (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, progressStroke, getResources().getDisplayMetrics()));
         resultNumTextSize = a.getDimensionPixelSize(R.styleable.SeekView_resultNumTextSize, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, resultNumTextSize, getResources().getDisplayMetrics()));
 
         scaleNumTextSize = a.getDimensionPixelSize(R.styleable.SeekView_scaleNumTextSize, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, scaleNumTextSize, getResources().getDisplayMetrics()));
-
-        unitTextSize = a.getDimensionPixelSize(R.styleable.SeekView_unitTextSize, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_SP, unitTextSize, getResources().getDisplayMetrics()));
-
-
-        showScaleResult = a.getBoolean(R.styleable.SeekView_showScaleResult, showScaleResult);
-        isBgRoundRect = a.getBoolean(R.styleable.SeekView_isBgRoundRect, isBgRoundRect);
-
         a.recycle();
     }
 
 
     private void init() {
         bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        smallScalePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        midScalePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        lagScalePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        scaleNumPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        resultNumPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        kgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        scalePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        progressPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        txtPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        resultValPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         bgPaint.setColor(bgColor);
-        smallScalePaint.setColor(smallScaleColor);
-        midScalePaint.setColor(midScaleColor);
-        lagScalePaint.setColor(largeScaleColor);
-        scaleNumPaint.setColor(scaleNumColor);
-        resultNumPaint.setColor(resultNumColor);
-        kgPaint.setColor(unitColor);
+        scalePaint.setColor(scaleColor);
+        txtPaint.setColor(txtColor);
+        resultValPaint.setColor(txtColor);
 
-        resultNumPaint.setStyle(Paint.Style.FILL);
-        kgPaint.setStyle(Paint.Style.FILL);
+        resultValPaint.setStyle(Paint.Style.FILL);
         bgPaint.setStyle(Paint.Style.FILL);
-        smallScalePaint.setStyle(Paint.Style.FILL);
-        midScalePaint.setStyle(Paint.Style.FILL);
-        lagScalePaint.setStyle(Paint.Style.FILL);
+        scalePaint.setStyle(Paint.Style.FILL);
+        progressPaint.setStyle(Paint.Style.FILL);
 
-        lagScalePaint.setStrokeCap(Paint.Cap.ROUND);
-        midScalePaint.setStrokeCap(Paint.Cap.ROUND);
-        smallScalePaint.setStrokeCap(Paint.Cap.ROUND);
+        progressPaint.setStrokeCap(Paint.Cap.ROUND);
+        scalePaint.setStrokeCap(Paint.Cap.ROUND);
 
-        smallScalePaint.setStrokeWidth(smallScaleStroke);
-        midScalePaint.setStrokeWidth(midScaleStroke);
-        lagScalePaint.setStrokeWidth(largeScaleStroke);
+        scalePaint.setStrokeWidth(scaleStroke);
+        progressPaint.setStrokeWidth(progressStroke);
 
-        resultNumPaint.setTextSize(resultNumTextSize);
-        kgPaint.setTextSize(unitTextSize);
-        scaleNumPaint.setTextSize(scaleNumTextSize);
+        resultValPaint.setTextSize(resultNumTextSize);
+        txtPaint.setTextSize(scaleNumTextSize);
 
         bgRect = new RectF();
         resultNumRect = new Rect();
         scaleNumRect = new Rect();
-        kgRect = new Rect();
 
-        resultNumPaint.getTextBounds(resultText, 0, resultText.length(), resultNumRect);
-        kgPaint.getTextBounds(resultText, 0, 1, kgRect);
+        resultValPaint.getTextBounds(resultText, 0, resultText.length(), resultNumRect);
 
         valueAnimator = new ValueAnimator();
 
@@ -304,7 +219,7 @@ public class SeekView extends View {
 
         switch (heightModule) {
             case MeasureSpec.AT_MOST:
-                height = rulerHeight  + topGap + getPaddingTop() + getPaddingBottom();
+                height = rulerHeight + topGap + getPaddingTop() + getPaddingBottom();
                 break;
             case MeasureSpec.UNSPECIFIED:
             case MeasureSpec.EXACTLY:
@@ -483,12 +398,12 @@ public class SeekView extends View {
                     //当滑动出范围的话，不绘制，去除左右边界
                 } else {
                     //绘制刻度，绘制刻度数字
-                    canvas.drawLine(0, 0, 0, scaleHeight*2, midScalePaint);
+                    String txtSrc = num1 / scaleCount + minScale + "";
+                    canvas.drawLine(0, 0, 0, scaleHeight * 2, scalePaint);
 
-                    scaleNumPaint.getTextBounds(num1 / scaleGap + minScale + "", 0, (num1 / scaleGap + minScale + "").length(), scaleNumRect);
+                    txtPaint.getTextBounds(txtSrc, 0, txtSrc.length(), scaleNumRect);
 
-                    canvas.drawText(num1 / scaleCount + minScale + "", -scaleNumRect.width() / 2, scaleHeight*3 +
-                            (rulerHeight - scaleHeight*3) / 2 + scaleNumRect.height(), scaleNumPaint);
+                    canvas.drawText(txtSrc, -scaleNumRect.width() / 2, scaleNumRect.height() + scaleHeight * 3, txtPaint);
                 }
 
             } else {
@@ -496,7 +411,7 @@ public class SeekView extends View {
                 if ((moveX >= 0 && curPos < moveX) || width / 2 - curPos < getWhichScalMovex(maxScale) - moveX) {   //去除左右边界
                     //当滑动出范围的话，不绘制，去除左右边界
                 } else {
-                    canvas.drawLine(0, 0, 0, scaleHeight, smallScalePaint);
+                    canvas.drawLine(0, 0, 0, scaleHeight, scalePaint);
                 }
             }
             ++num1;//刻度加1
@@ -511,9 +426,9 @@ public class SeekView extends View {
 //                    //当滑动出范围的话，不绘制，去除左右边界
 //                    //绘制刻度，绘制刻度数字
 //                    canvas.drawLine(0, 0, 0, midScaleHeight, midScalePaint);
-//                    scaleNumPaint.getTextBounds(num1 / scaleGap + minScale + "", 0, (num1 / scaleGap + minScale + "").length(), scaleNumRect);
+//                    txtPaint.getTextBounds(num1 / scaleGap + minScale + "", 0, (num1 / scaleGap + minScale + "").length(), scaleNumRect);
 //                    canvas.drawText(num1 / scaleCount + minScale + "", -scaleNumRect.width() / 2, lagScaleHeight +
-//                            (rulerHeight - lagScaleHeight) / 2 + scaleNumRect.height(), scaleNumPaint);
+//                            (rulerHeight - lagScaleHeight) / 2 + scaleNumRect.height(), txtPaint);
 //                }
 //            } else {
 //                //绘制每10分钟刻度
@@ -531,35 +446,27 @@ public class SeekView extends View {
         Log.d(TAG, "screenStartPos = " + screenStartPos + "     screenEndPos = " + screenEndPos);
         //绘制进度条
         if (progress > screenEndPos) {
-            canvas.drawLine(0, 0, width, 0, lagScalePaint);
+            canvas.drawLine(0, 0, width, 0, progressPaint);
         } else if (progress > screenStartPos) {
-            canvas.drawLine(0, 0, (progress - screenStartPos) * scaleGap + offsetX, 0, lagScalePaint);
+            canvas.drawLine(0, 0, (progress - screenStartPos) * scaleGap + offsetX, 0, progressPaint);
         }
         //绘制屏幕中间用来选中刻度的最大刻度
-//        canvas.drawLine(width / 2, 0, width / 2, lagScaleHeight, lagScalePaint);
+//        canvas.drawLine(width / 2, 0, width / 2, lagScaleHeight, progressPaint);
 
     }
 
     //绘制上面的结果 结果值+单位
     private void drawResultText(Canvas canvas, String resultText) {
-        if (!showScaleResult) {
-            return;
-        }
         canvas.translate(0, -resultNumRect.height() - topGap / 2);
-        resultNumPaint.getTextBounds(resultText, 0, resultText.length(), resultNumRect);
+        resultValPaint.getTextBounds(resultText, 0, resultText.length(), resultNumRect);
         canvas.drawText(resultText, width / 2 - resultNumRect.width() / 2, resultNumRect.height(),
-                resultNumPaint);
+                resultValPaint);
         resultNumRight = width / 2 + resultNumRect.width() / 2 + 10;
-        canvas.drawText(unit, resultNumRight, kgRect.height() + 2, kgPaint);
     }
 
     private void drawBg(Canvas canvas) {
         bgRect.set(0, 0, width, height);
-//        if (isBgRoundRect) {
-//            canvas.drawRoundRect(bgRect, 20, 20, bgPaint); //20->椭圆的用于圆形角x-radius
-//        } else {
-            canvas.drawRect(bgRect, bgPaint);
-//        }
+        canvas.drawRect(bgRect, bgPaint);
     }
 
     public interface OnChooseResulterListener {
@@ -608,52 +515,13 @@ public class SeekView extends View {
         invalidate();
     }
 
-    public void setSmallScaleColor(int smallScaleColor) {
-        this.smallScaleColor = smallScaleColor;
+    public void setTxtColor(int txtColor) {
+        this.txtColor = txtColor;
         invalidate();
     }
 
-    public void setMidScaleColor(int midScaleColor) {
-        this.midScaleColor = midScaleColor;
-        invalidate();
-    }
-
-    public void setLargeScaleColor(int largeScaleColor) {
-        this.largeScaleColor = largeScaleColor;
-    }
-
-    public void setScaleNumColor(int scaleNumColor) {
-        this.scaleNumColor = scaleNumColor;
-        invalidate();
-    }
-
-    public void setResultNumColor(int resultNumColor) {
-        this.resultNumColor = resultNumColor;
-        invalidate();
-    }
-
-    public void setUnit(String unit) {
-        this.unit = unit;
-        invalidate();
-    }
-
-    public void setUnitColor(int unitColor) {
-        this.unitColor = unitColor;
-        invalidate();
-    }
-
-    public void setSmallScaleStroke(int smallScaleStroke) {
-        this.smallScaleStroke = smallScaleStroke;
-        invalidate();
-    }
-
-    public void setMidScaleStroke(int midScaleStroke) {
-        this.midScaleStroke = midScaleStroke;
-        invalidate();
-    }
-
-    public void setLargeScaleStroke(int largeScaleStroke) {
-        this.largeScaleStroke = largeScaleStroke;
+    public void setProgressStroke(int progressStroke) {
+        this.progressStroke = progressStroke;
         invalidate();
     }
 
@@ -664,21 +532,6 @@ public class SeekView extends View {
 
     public void setScaleNumTextSize(int scaleNumTextSize) {
         this.scaleNumTextSize = scaleNumTextSize;
-        invalidate();
-    }
-
-    public void setUnitTextSize(int unitTextSize) {
-        this.unitTextSize = unitTextSize;
-        invalidate();
-    }
-
-    public void setShowScaleResult(boolean showScaleResult) {
-        this.showScaleResult = showScaleResult;
-        invalidate();
-    }
-
-    public void setIsBgRoundRect(boolean bgRoundRect) {
-        isBgRoundRect = bgRoundRect;
         invalidate();
     }
 }
