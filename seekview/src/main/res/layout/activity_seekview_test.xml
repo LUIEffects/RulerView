@@ -4,23 +4,32 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="center_horizontal"
     android:orientation="vertical">
 
     <com.yangshipin.seekview.SeekView
+        android:id="@+id/mSeekView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         lsp:bgColor="#fcfffc"
         lsp:firstScale="72"
-        lsp:progressGrooveStroke="2dp"
         lsp:maxScale="144"
         lsp:minScale="0"
+        lsp:progressGrooveStroke="2dp"
         lsp:resultNumTextSize="20sp"
-        lsp:txtHeight="40dp"
-        lsp:topGap="30dp"
         lsp:scaleCount="6"
         lsp:scaleGap="10dp"
+        lsp:scaleNumTextSize="16sp"
+        lsp:topGap="25dp"
         lsp:txtColor="#666666"
-        lsp:scaleNumTextSize="16sp" />
+        lsp:txtHeight="40dp" />
+
+    <TextView
+        android:id="@+id/mTv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:textSize="25dp" />
 
 </LinearLayout>

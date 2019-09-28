@@ -35,7 +35,7 @@ public class SeekView extends View {
      * 尺子和屏幕顶部以及结果之间的高度
      */
     private int topGap = 20;
-    private int progressGap = 10;
+    private int progressGap = 20;
     /**
      * 刻度平分多少份
      */
@@ -94,10 +94,12 @@ public class SeekView extends View {
     /**
      * 结果回调
      */
-    private OnChooseResulterListener onChooseResulterListener;
+    private OnInteractListener onInteractListener;
+    //    private OnChooseResulterListener onChooseResulterListener;
     private ValueAnimator valueAnimator;
     private VelocityTracker velocityTracker = VelocityTracker.obtain();
     private String resultText = String.valueOf(firstScale);
+    private Paint testPaint;
     private Paint bgPaint;
     private Paint scalePaint;
     private Paint progressPaint;
@@ -117,6 +119,7 @@ public class SeekView extends View {
     private int rightScroll;
     private int xVelocity;
     private SlideType curSlideType;
+    private boolean isDebug = true;
 
     public SeekView(Context context) {
         this(context, null);
@@ -132,65 +135,72 @@ public class SeekView extends View {
         init();
     }
 
-    public void setOnChooseResulterListener(OnChooseResulterListener onChooseResulterListener) {
-        this.onChooseResulterListener = onChooseResulterListener;
+    public void setOnInteractListener(OnInteractListener onInteractListener) {
+        this.onInteractListener = onInteractListener;
     }
+
+    //    public void setOnChooseResulterListener(OnChooseResulterListener onChooseResulterListener) {
+//        this.onChooseResulterListener = onChooseResulterListener;
+//    }
 
     private void setAttr(AttributeSet attrs, int defStyleAttr) {
 
-        TypedArray a = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.SeekView, defStyleAttr, 0);
+        TypedArray typedArray = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.SeekView, defStyleAttr, 0);
 
-        scaleHeight = a.getDimensionPixelSize(R.styleable.SeekView_scaleHeight, (int) TypedValue.applyDimension(
+        scaleHeight = typedArray.getDimensionPixelSize(R.styleable.SeekView_scaleHeight, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, scaleHeight, getResources().getDisplayMetrics()));
 
-        txtHeight = a.getDimensionPixelSize(R.styleable.SeekView_txtHeight, (int) TypedValue.applyDimension(
+        txtHeight = typedArray.getDimensionPixelSize(R.styleable.SeekView_txtHeight, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, txtHeight, getResources().getDisplayMetrics()));
 
-        topGap = a.getDimensionPixelSize(R.styleable.SeekView_topGap, (int) TypedValue.applyDimension(
+        topGap = typedArray.getDimensionPixelSize(R.styleable.SeekView_topGap, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, topGap, getResources().getDisplayMetrics()));
 
-        progressGap = a.getDimensionPixelSize(R.styleable.SeekView_progressGap, (int) TypedValue.applyDimension(
+        progressGap = typedArray.getDimensionPixelSize(R.styleable.SeekView_progressGap, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, progressGap, getResources().getDisplayMetrics()));
 
-        scaleCount = a.getInt(R.styleable.SeekView_scaleCount, scaleCount);
+        scaleCount = typedArray.getInt(R.styleable.SeekView_scaleCount, scaleCount);
 
-        scaleGap = a.getDimensionPixelSize(R.styleable.SeekView_scaleGap, (int) TypedValue.applyDimension(
+        scaleGap = typedArray.getDimensionPixelSize(R.styleable.SeekView_scaleGap, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, scaleGap, getResources().getDisplayMetrics()));
 
-        minScale = a.getInt(R.styleable.SeekView_minScale, minScale);
+        minScale = typedArray.getInt(R.styleable.SeekView_minScale, minScale);
 
-        firstScale = a.getFloat(R.styleable.SeekView_firstScale, firstScale);
+        firstScale = typedArray.getFloat(R.styleable.SeekView_firstScale, firstScale);
 
-        maxScale = a.getInt(R.styleable.SeekView_maxScale, maxScale);
+        maxScale = typedArray.getInt(R.styleable.SeekView_maxScale, maxScale);
 
-        bgColor = a.getColor(R.styleable.SeekView_bgColor, bgColor);
+        bgColor = typedArray.getColor(R.styleable.SeekView_bgColor, bgColor);
 
-        txtColor = a.getColor(R.styleable.SeekView_txtColor, txtColor);
+        txtColor = typedArray.getColor(R.styleable.SeekView_txtColor, txtColor);
 
-        progressGrooveStroke = a.getDimensionPixelSize(R.styleable.SeekView_progressGrooveStroke, (int) TypedValue.applyDimension(
+        progressGrooveStroke = typedArray.getDimensionPixelSize(R.styleable.SeekView_progressGrooveStroke, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, progressGrooveStroke, getResources().getDisplayMetrics()));
 
-        resultNumTextSize = a.getDimensionPixelSize(R.styleable.SeekView_resultNumTextSize, (int) TypedValue.applyDimension(
+        resultNumTextSize = typedArray.getDimensionPixelSize(R.styleable.SeekView_resultNumTextSize, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, resultNumTextSize, getResources().getDisplayMetrics()));
 
-        scaleNumTextSize = a.getDimensionPixelSize(R.styleable.SeekView_scaleNumTextSize, (int) TypedValue.applyDimension(
+        scaleNumTextSize = typedArray.getDimensionPixelSize(R.styleable.SeekView_scaleNumTextSize, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, scaleNumTextSize, getResources().getDisplayMetrics()));
-        a.recycle();
+        typedArray.recycle();
     }
 
 
     private void init() {
+        testPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         scalePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         progressPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         txtPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         resultValPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
+        testPaint.setColor(0xff00ff00);
         bgPaint.setColor(bgColor);
         scalePaint.setColor(scaleColor);
         txtPaint.setColor(txtColor);
         resultValPaint.setColor(txtColor);
 
+        testPaint.setStyle(Paint.Style.FILL);
         resultValPaint.setStyle(Paint.Style.FILL);
         bgPaint.setStyle(Paint.Style.FILL);
         scalePaint.setStyle(Paint.Style.FILL);
@@ -199,6 +209,7 @@ public class SeekView extends View {
         progressPaint.setStrokeCap(Paint.Cap.ROUND);
         scalePaint.setStrokeCap(Paint.Cap.ROUND);
 
+        testPaint.setStrokeWidth(progressGrooveStroke);
         scalePaint.setStrokeWidth(scaleStroke);
         progressPaint.setStrokeWidth(progressGrooveStroke);
 
@@ -252,7 +263,7 @@ public class SeekView extends View {
     private SlideType getSlideType(MotionEvent downEvent) {
         float x = downEvent.getX();
         float y = downEvent.getY();
-        if (y < topGap + getPaddingTop() || y > getHeight() - topGap) {
+        if (y < getPaddingTop() + topGap || y > getHeight() - getPaddingTop() - topGap - progressGap) {
             return SlideType.PANNEL;
         } else
             return SlideType.PROGRESS;
@@ -275,10 +286,10 @@ public class SeekView extends View {
                         valueAnimator.end();
                         valueAnimator.cancel();
                     }
-                } else if (curSlideType == SlideType.PROGRESS){
+                } else if (curSlideType == SlideType.PROGRESS) {
 
                 }
-                    break;
+                break;
             case MotionEvent.ACTION_MOVE:
                 if (curSlideType == SlideType.PANNEL) {
                     //滑动时候,通过假设的滑动距离,做超出左边界以及右边界的限制。
@@ -288,8 +299,10 @@ public class SeekView extends View {
                     } else if (moveX <= getWhichScalMovex(maxScale) + width / 2) {
                         moveX = getWhichScalMovex(maxScale) + width / 2;
                     }
-                }else if (curSlideType == SlideType.PROGRESS){
-                    progress = (int) (screenStartPos+currentX/scaleGap);
+                } else if (curSlideType == SlideType.PROGRESS) {
+                    progress = (int) (screenStartPos + currentX / scaleGap);
+                    if (onInteractListener != null)
+                        onInteractListener.onProgressUpdate(progress);
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -354,7 +367,11 @@ public class SeekView extends View {
     }
 
     private void drawScaleAndNum(Canvas canvas) {
-        canvas.translate(0, topGap);//移动画布到结果值的下面
+        canvas.translate(0, topGap);
+        if (isDebug) {
+            canvas.drawLine(0, 0, width, 0, testPaint);
+        }
+        canvas.translate(0, progressGap / 2);//移动画布到结果值的下面
 
         int num1;//确定刻度位置
         float offsetX;
@@ -394,9 +411,9 @@ public class SeekView extends View {
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
                         //这里是滑动结束时候回调给使用者的结果值
-                        if (onChooseResulterListener != null) {
-                            onChooseResulterListener.onEndResult(resultText);
-                        }
+//                        if (onChooseResulterListener != null) {
+//                            onChooseResulterListener.onEndResult(resultText);
+//                        }
                     }
                 });
                 valueAnimator.setDuration(300);
@@ -410,10 +427,10 @@ public class SeekView extends View {
         canvas.save();
         canvas.translate(offsetX, progressGrooveStroke);    //不加该偏移的话，滑动时刻度不会落在0~1之间只会落在整数上面,其实这个都能设置一种模式了，毕竟初衷就是指针不会落在小数上面
         //这里是滑动时候不断回调给使用者的结果值
-        resultText = String.valueOf(new WeakReference<>(new BigDecimal((width / 2 - moveX) / scaleGap)).get().setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + minScale);
-        if (onChooseResulterListener != null) {
-            onChooseResulterListener.onScrollResult(resultText);
-        }
+//        resultText = String.valueOf(new WeakReference<>(new BigDecimal((width / 2 - moveX) / scaleGap)).get().setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + minScale);
+//        if (onChooseResulterListener != null) {
+//            onChooseResulterListener.onScrollResult(resultText);
+//        }
         //绘制当前屏幕可见刻度,不需要裁剪屏幕,while循环只会执行·屏幕宽度/刻度宽度·次
         while (curPos < width) {
             if (num1 % scaleCount == 0) {
@@ -491,6 +508,10 @@ public class SeekView extends View {
             progressPaint.setColor(progressColor);
             canvas.drawLine(0, 0, width, 0, progressPaint);
         }
+        if (isDebug) {
+            canvas.translate(0, progressGap / 2);
+            canvas.drawLine(0, 0, width, 0, testPaint);
+        }
         //绘制屏幕中间用来选中刻度的最大刻度
 //        canvas.drawLine(width / 2, 0, width / 2, lagScaleHeight, progressPaint);
 
@@ -513,6 +534,10 @@ public class SeekView extends View {
         void onEndResult(String result);
 
         void onScrollResult(String result);
+    }
+
+    public interface OnInteractListener {
+        void onProgressUpdate(int progress);
     }
 
     public void setTxtHeight(int txtHeight) {
