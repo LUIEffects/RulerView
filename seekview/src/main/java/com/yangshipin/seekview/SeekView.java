@@ -22,20 +22,20 @@ import java.lang.ref.WeakReference;
 import java.math.BigDecimal;
 
 /**
- * Created by lsp on 2017/10/13 10 47
- * Email:6161391073@qq.com
+ * @author taitsun
+ * @since 2019-09-28
  */
-
 public class SeekView extends View {
     private static final String TAG = "SeekView";
     /**
-     * 尺子高度
+     * 文案高度
      */
-    private int rulerHeight = 50;
+    private int txtHeight = 50;
     /**
      * 尺子和屏幕顶部以及结果之间的高度
      */
-    private int topGap = rulerHeight / 4;
+    private int topGap = 20;
+    private int progressGap = 10;
     /**
      * 刻度平分多少份
      */
@@ -71,9 +71,11 @@ public class SeekView extends View {
     private int txtColor = 0xff333333;
     private int scaleStroke = 1;
     /**
-     * 大刻度粗细大小
+     * 进度条
      */
-    private int progressStroke = 3;
+    private int progressGrooveStroke = 1;
+    private int progressGrooveColor = 0xff999999;
+    private int progressColor = 0xffff0000;
     /**
      * 结果字体大小
      */
@@ -88,7 +90,6 @@ public class SeekView extends View {
 
     private int screenStartPos;
     private int screenEndPos;
-
 
     /**
      * 结果回调
@@ -107,7 +108,6 @@ public class SeekView extends View {
     private RectF bgRect;
     private int height, width;
     private int curPos = 0;
-    private int resultNumRight;
     private float downX;
     private float moveX = 0;
     private float currentX;
@@ -142,11 +142,14 @@ public class SeekView extends View {
         scaleHeight = a.getDimensionPixelSize(R.styleable.SeekView_scaleHeight, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, scaleHeight, getResources().getDisplayMetrics()));
 
-        rulerHeight = a.getDimensionPixelSize(R.styleable.SeekView_rulerHeight, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, rulerHeight, getResources().getDisplayMetrics()));
+        txtHeight = a.getDimensionPixelSize(R.styleable.SeekView_txtHeight, (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, txtHeight, getResources().getDisplayMetrics()));
 
         topGap = a.getDimensionPixelSize(R.styleable.SeekView_topGap, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, topGap, getResources().getDisplayMetrics()));
+
+        progressGap = a.getDimensionPixelSize(R.styleable.SeekView_progressGap, (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, progressGap, getResources().getDisplayMetrics()));
 
         scaleCount = a.getInt(R.styleable.SeekView_scaleCount, scaleCount);
 
@@ -163,8 +166,9 @@ public class SeekView extends View {
 
         txtColor = a.getColor(R.styleable.SeekView_txtColor, txtColor);
 
-        progressStroke = a.getDimensionPixelSize(R.styleable.SeekView_progressStroke, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, progressStroke, getResources().getDisplayMetrics()));
+        progressGrooveStroke = a.getDimensionPixelSize(R.styleable.SeekView_progressGrooveStroke, (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, progressGrooveStroke, getResources().getDisplayMetrics()));
+
         resultNumTextSize = a.getDimensionPixelSize(R.styleable.SeekView_resultNumTextSize, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, resultNumTextSize, getResources().getDisplayMetrics()));
 
@@ -195,7 +199,7 @@ public class SeekView extends View {
         scalePaint.setStrokeCap(Paint.Cap.ROUND);
 
         scalePaint.setStrokeWidth(scaleStroke);
-        progressPaint.setStrokeWidth(progressStroke);
+        progressPaint.setStrokeWidth(progressGrooveStroke);
 
         resultValPaint.setTextSize(resultNumTextSize);
         txtPaint.setTextSize(scaleNumTextSize);
@@ -219,7 +223,7 @@ public class SeekView extends View {
 
         switch (heightModule) {
             case MeasureSpec.AT_MOST:
-                height = rulerHeight + topGap + getPaddingTop() + getPaddingBottom();
+                height = topGap + progressGap + txtHeight + topGap / 2 + getPaddingTop() + getPaddingBottom();
                 break;
             case MeasureSpec.UNSPECIFIED:
             case MeasureSpec.EXACTLY:
@@ -381,7 +385,7 @@ public class SeekView extends View {
             num1 = (int) -(moveX / scaleGap);
             offsetX = (moveX % scaleGap);
         }
-        canvas.translate(offsetX, 0);    //不加该偏移的话，滑动时刻度不会落在0~1之间只会落在整数上面,其实这个都能设置一种模式了，毕竟初衷就是指针不会落在小数上面
+        canvas.translate(offsetX, progressGap);    //不加该偏移的话，滑动时刻度不会落在0~1之间只会落在整数上面,其实这个都能设置一种模式了，毕竟初衷就是指针不会落在小数上面
         //这里是滑动时候不断回调给使用者的结果值
         resultText = String.valueOf(new WeakReference<>(new BigDecimal((width / 2 - moveX) / scaleGap)).get().setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + minScale);
         if (onChooseResulterListener != null) {
@@ -428,7 +432,7 @@ public class SeekView extends View {
 //                    canvas.drawLine(0, 0, 0, midScaleHeight, midScalePaint);
 //                    txtPaint.getTextBounds(num1 / scaleGap + minScale + "", 0, (num1 / scaleGap + minScale + "").length(), scaleNumRect);
 //                    canvas.drawText(num1 / scaleCount + minScale + "", -scaleNumRect.width() / 2, lagScaleHeight +
-//                            (rulerHeight - lagScaleHeight) / 2 + scaleNumRect.height(), txtPaint);
+//                            (txtHeight - lagScaleHeight) / 2 + scaleNumRect.height(), txtPaint);
 //                }
 //            } else {
 //                //绘制每10分钟刻度
@@ -445,10 +449,24 @@ public class SeekView extends View {
         canvas.restore();
         Log.d(TAG, "screenStartPos = " + screenStartPos + "     screenEndPos = " + screenEndPos);
         //绘制进度条
-        if (progress > screenEndPos) {
+        if (progress < screenStartPos) {
+            progressPaint.setColor(progressGrooveColor);
             canvas.drawLine(0, 0, width, 0, progressPaint);
-        } else if (progress > screenStartPos) {
+        } else if (progress <= screenEndPos) {
+            progressPaint.setColor(progressColor);
             canvas.drawLine(0, 0, (progress - screenStartPos) * scaleGap + offsetX, 0, progressPaint);
+
+            progressPaint.setColor(progressGrooveColor);
+            canvas.drawLine((progress - screenStartPos) * scaleGap + offsetX, 0, width, 0, progressPaint);
+
+            progressPaint.setColor(progressColor);
+            progressPaint.setStrokeWidth(progressGrooveStroke * 3);
+            canvas.drawPoint((progress - screenStartPos) * scaleGap + offsetX, 0, progressPaint);
+
+            progressPaint.setStrokeWidth(progressGrooveStroke);
+        } else if (progress > screenEndPos) {
+            progressPaint.setColor(progressColor);
+            canvas.drawLine(0, 0, width, 0, progressPaint);
         }
         //绘制屏幕中间用来选中刻度的最大刻度
 //        canvas.drawLine(width / 2, 0, width / 2, lagScaleHeight, progressPaint);
@@ -461,7 +479,6 @@ public class SeekView extends View {
         resultValPaint.getTextBounds(resultText, 0, resultText.length(), resultNumRect);
         canvas.drawText(resultText, width / 2 - resultNumRect.width() / 2, resultNumRect.height(),
                 resultValPaint);
-        resultNumRight = width / 2 + resultNumRect.width() / 2 + 10;
     }
 
     private void drawBg(Canvas canvas) {
@@ -475,8 +492,8 @@ public class SeekView extends View {
         void onScrollResult(String result);
     }
 
-    public void setRulerHeight(int rulerHeight) {
-        this.rulerHeight = rulerHeight;
+    public void setTxtHeight(int txtHeight) {
+        this.txtHeight = txtHeight;
         invalidate();
     }
 
@@ -520,8 +537,8 @@ public class SeekView extends View {
         invalidate();
     }
 
-    public void setProgressStroke(int progressStroke) {
-        this.progressStroke = progressStroke;
+    public void setProgressGrooveStroke(int progressGrooveStroke) {
+        this.progressGrooveStroke = progressGrooveStroke;
         invalidate();
     }
 
