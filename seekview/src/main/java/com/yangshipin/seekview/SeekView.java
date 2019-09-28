@@ -116,6 +116,7 @@ public class SeekView extends View {
     private int leftScroll;
     private int rightScroll;
     private int xVelocity;
+    private SlideType curSlideType;
 
     public SeekView(Context context) {
         this(context, null);
@@ -244,6 +245,19 @@ public class SeekView extends View {
 //        drawResultText(canvas, resultText);
     }
 
+    private enum SlideType {
+        PANNEL, PROGRESS
+    }
+
+    private SlideType getSlideType(MotionEvent downEvent) {
+        float x = downEvent.getX();
+        float y = downEvent.getY();
+        if (y < topGap + getPaddingTop() || y > getHeight() - topGap) {
+            return SlideType.PANNEL;
+        } else
+            return SlideType.PROGRESS;
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         currentX = event.getX();
@@ -252,31 +266,40 @@ public class SeekView extends View {
         velocityTracker.addMovement(event);
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                //按下时如果属性动画还没执行完,就终止,记录下当前按下点的位置
-                if (valueAnimator != null && valueAnimator.isRunning()) {
-                    valueAnimator.end();
-                    valueAnimator.cancel();
+                curSlideType = getSlideType(event);
+                Log.d(TAG, "onTouchEvent: getSlideType=" + curSlideType.name());
+                if (curSlideType == SlideType.PANNEL) {
+                    //按下时如果属性动画还没执行完,就终止,记录下当前按下点的位置
+                    if (valueAnimator != null && valueAnimator.isRunning()) {
+                        valueAnimator.end();
+                        valueAnimator.cancel();
+                    }
+                    downX = event.getX();
                 }
-                downX = event.getX();
                 break;
             case MotionEvent.ACTION_MOVE:
-                //滑动时候,通过假设的滑动距离,做超出左边界以及右边界的限制。
-                moveX = currentX - downX + lastMoveX;
-                if (moveX >= 0) {
-                    moveX = 0;
-                } else if (moveX <= getWhichScalMovex(maxScale) + width / 2) {
-                    moveX = getWhichScalMovex(maxScale) + width / 2;
+                if (curSlideType == SlideType.PANNEL) {
+                    //滑动时候,通过假设的滑动距离,做超出左边界以及右边界的限制。
+                    moveX = currentX - downX + lastMoveX;
+                    if (moveX >= 0) {
+                        moveX = 0;
+                    } else if (moveX <= getWhichScalMovex(maxScale) + width / 2) {
+                        moveX = getWhichScalMovex(maxScale) + width / 2;
+                    }
                 }
                 break;
             case MotionEvent.ACTION_UP:
-                //手指抬起时候制造惯性滑动
-                lastMoveX = moveX;
-                xVelocity = (int) velocityTracker.getXVelocity();
-                autoVelocityScroll(xVelocity);
-                velocityTracker.clear();
+                if (curSlideType == SlideType.PANNEL) {
+                    //手指抬起时候制造惯性滑动
+                    lastMoveX = moveX;
+                    xVelocity = (int) velocityTracker.getXVelocity();
+                    autoVelocityScroll(xVelocity);
+                    velocityTracker.clear();
+                }
                 break;
         }
-        invalidate();
+        if (curSlideType == SlideType.PANNEL)
+            invalidate();
         return true;
     }
 
@@ -395,7 +418,7 @@ public class SeekView extends View {
                 boolean isSlide2LeftBound = (moveX >= 0 && curPos < moveX - scaleGap);
                 boolean isSlide2RightBound = (curPos >= width / 2 + moveX - getWhichScalMovex(maxScale + 1));
                 if (isSlide2LeftBound || isSlide2RightBound) {   //去除左右边界
-                    Log.d(TAG, "drawScaleAndNum: ");
+//                    Log.d(TAG, "drawScaleAndNum: ");
                     //当滑动出范围的话，不绘制，去除左右边界
                 } else {
                     //绘制刻度，绘制刻度数字
@@ -444,7 +467,7 @@ public class SeekView extends View {
 //        }
         screenEndPos = num1;
         canvas.restore();
-        Log.d(TAG, "screenStartPos = " + screenStartPos + "     screenEndPos = " + screenEndPos);
+//        Log.d(TAG, "screenStartPos = " + screenStartPos + "     screenEndPos = " + screenEndPos);
         //绘制进度条
         if (progress < screenStartPos) {
             progressPaint.setColor(progressGrooveColor);
