@@ -342,11 +342,7 @@ public class SeekView extends View {
         num1 = -(int) (moveX / scaleGap);//小刻度值——>左侧最小的刻度值  //滑动刻度的整数部分
         screenStartPos = num1;
         offsetX = (moveX % scaleGap);//偏移量   //滑动刻度的小数部分
-
-        canvas.save();
-
         curPos = 0;  //准备开始绘制当前屏幕,从最左面开始
-
         if (isUp) {   //这部分代码主要是计算手指抬起时，惯性滑动结束时，刻度需要停留的位置
             offsetX = ((moveX - width / 2 % scaleGap) % scaleGap);
             if (offsetX <= 0) {
@@ -385,7 +381,8 @@ public class SeekView extends View {
             num1 = (int) -(moveX / scaleGap);
             offsetX = (moveX % scaleGap);
         }
-        canvas.translate(offsetX, progressGap);    //不加该偏移的话，滑动时刻度不会落在0~1之间只会落在整数上面,其实这个都能设置一种模式了，毕竟初衷就是指针不会落在小数上面
+        canvas.save();
+        canvas.translate(offsetX, progressGrooveStroke);    //不加该偏移的话，滑动时刻度不会落在0~1之间只会落在整数上面,其实这个都能设置一种模式了，毕竟初衷就是指针不会落在小数上面
         //这里是滑动时候不断回调给使用者的结果值
         resultText = String.valueOf(new WeakReference<>(new BigDecimal((width / 2 - moveX) / scaleGap)).get().setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + minScale);
         if (onChooseResulterListener != null) {
