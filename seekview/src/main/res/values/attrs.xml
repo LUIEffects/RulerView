@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
     <declare-styleable name="SeekView">
+        <attr name="scaleHeight" format="dimension"/>       <!--刻度的高度-->
         <attr name="rulerHeight" format="dimension" />               <!--尺子的高度-->
         <attr name="rulerWidth" format="dimension" />                 <!--尺子的宽度-->
-        <attr name="rulerToResultgap" format="dimension" />          <!--尺子距离结果的高度-->
+        <attr name="topGap" format="dimension" />          <!--尺子距离结果的高度-->
         <attr name="scaleGap" format="dimension" />                  <!--刻度间距-->
         <attr name="scaleCount" format="integer" />                  <!--刻度数-->
         <attr name="firstScale" format="float" />                    <!--默认选中的刻度-->

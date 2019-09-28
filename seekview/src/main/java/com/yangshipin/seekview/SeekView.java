@@ -36,7 +36,7 @@ public class SeekView extends View {
     /**
      * 尺子和屏幕顶部以及结果之间的高度
      */
-    private int rulerToResultgap = rulerHeight / 4;
+    private int topGap = rulerHeight / 4;
     /**
      * 刻度平分多少份
      */
@@ -123,6 +123,8 @@ public class SeekView extends View {
      */
     private boolean isBgRoundRect = true;
 
+    private int scaleHeight = 3;
+
     private int progress = 72;
 
     private int screenStartPos;
@@ -148,9 +150,6 @@ public class SeekView extends View {
     private Rect kgRect;
     private RectF bgRect;
     private int height, width;
-    private int smallScaleHeight;
-    private int midScaleHeight;
-    private int lagScaleHeight;
     private int curPos = 0;
     private int resultNumRight;
     private float downX;
@@ -184,11 +183,14 @@ public class SeekView extends View {
 
         TypedArray a = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.SeekView, defStyleAttr, 0);
 
+        scaleHeight = a.getDimensionPixelSize(R.styleable.SeekView_scaleHeight,(int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, scaleHeight, getResources().getDisplayMetrics()));
+
         rulerHeight = a.getDimensionPixelSize(R.styleable.SeekView_rulerHeight, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, rulerHeight, getResources().getDisplayMetrics()));
 
-        rulerToResultgap = a.getDimensionPixelSize(R.styleable.SeekView_rulerToResultgap, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, rulerToResultgap, getResources().getDisplayMetrics()));
+        topGap = a.getDimensionPixelSize(R.styleable.SeekView_topGap, (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, topGap, getResources().getDisplayMetrics()));
 
         scaleCount = a.getInt(R.styleable.SeekView_scaleCount, scaleCount);
 
@@ -289,9 +291,6 @@ public class SeekView extends View {
         resultNumPaint.getTextBounds(resultText, 0, resultText.length(), resultNumRect);
         kgPaint.getTextBounds(resultText, 0, 1, kgRect);
 
-        smallScaleHeight = rulerHeight / 4;
-        midScaleHeight = rulerHeight / 2;
-        lagScaleHeight = rulerHeight / 2 + 5;
         valueAnimator = new ValueAnimator();
 
     }
@@ -305,7 +304,7 @@ public class SeekView extends View {
 
         switch (heightModule) {
             case MeasureSpec.AT_MOST:
-                height = rulerHeight + (showScaleResult ? resultNumRect.height() : 0) + rulerToResultgap * 2 + getPaddingTop() + getPaddingBottom();
+                height = rulerHeight  + topGap + getPaddingTop() + getPaddingBottom();
                 break;
             case MeasureSpec.UNSPECIFIED:
             case MeasureSpec.EXACTLY:
@@ -346,8 +345,8 @@ public class SeekView extends View {
                 moveX = currentX - downX + lastMoveX;
                 if (moveX >= 0) {
                     moveX = 0;
-                } else if (moveX <= getWhichScalMovex(maxScale)+width/2) {
-                    moveX = getWhichScalMovex(maxScale)+width/2;
+                } else if (moveX <= getWhichScalMovex(maxScale) + width / 2) {
+                    moveX = getWhichScalMovex(maxScale) + width / 2;
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -379,8 +378,8 @@ public class SeekView extends View {
                 moveX += (int) animation.getAnimatedValue();
                 if (moveX >= 0) {
                     moveX = 0;
-                } else if (moveX <= getWhichScalMovex(maxScale)+width/2) {
-                    moveX = getWhichScalMovex(maxScale)+width/2;
+                } else if (moveX <= getWhichScalMovex(maxScale) + width / 2) {
+                    moveX = getWhichScalMovex(maxScale) + width / 2;
                 }
                 lastMoveX = moveX;
                 invalidate();
@@ -400,6 +399,7 @@ public class SeekView extends View {
 
     /**
      * 计算出屏幕左侧相较于内容左侧的偏移距离
+     *
      * @param scale
      * @return
      */
@@ -409,7 +409,7 @@ public class SeekView extends View {
     }
 
     private void drawScaleAndNum(Canvas canvas) {
-        canvas.translate(0, (showScaleResult ? resultNumRect.height() : 0) + rulerToResultgap);//移动画布到结果值的下面
+        canvas.translate(0, topGap);//移动画布到结果值的下面
 
         int num1;//确定刻度位置
         float offsetX;
@@ -476,37 +476,64 @@ public class SeekView extends View {
         while (curPos < width) {
             if (num1 % scaleCount == 0) {
                 //绘制整点刻度以及文字
-                if ((moveX >= 0 && curPos < moveX - scaleGap) || width / 2 - curPos <= getWhichScalMovex(maxScale + 1) - moveX) {   //去除左右边界
-                //当滑动出范围的话，不绘制，去除左右边界
+                boolean isSlide2LeftBound = (moveX >= 0 && curPos < moveX - scaleGap);
+                boolean isSlide2RightBound = (curPos >= width / 2 + moveX - getWhichScalMovex(maxScale + 1));
+                if (isSlide2LeftBound || isSlide2RightBound) {   //去除左右边界
+                    Log.d(TAG, "drawScaleAndNum: ");
+                    //当滑动出范围的话，不绘制，去除左右边界
                 } else {
                     //绘制刻度，绘制刻度数字
-                    canvas.drawLine(0, 0, 0, midScaleHeight, midScalePaint);
+                    canvas.drawLine(0, 0, 0, scaleHeight*2, midScalePaint);
+
                     scaleNumPaint.getTextBounds(num1 / scaleGap + minScale + "", 0, (num1 / scaleGap + minScale + "").length(), scaleNumRect);
-                    canvas.drawText(num1 / scaleCount + minScale + "", -scaleNumRect.width() / 2, lagScaleHeight +
-                            (rulerHeight - lagScaleHeight) / 2 + scaleNumRect.height(), scaleNumPaint);
+
+                    canvas.drawText(num1 / scaleCount + minScale + "", -scaleNumRect.width() / 2, scaleHeight*3 +
+                            (rulerHeight - scaleHeight*3) / 2 + scaleNumRect.height(), scaleNumPaint);
                 }
 
             } else {
-                //绘制分钟刻度
+                //绘制每10分钟刻度
                 if ((moveX >= 0 && curPos < moveX) || width / 2 - curPos < getWhichScalMovex(maxScale) - moveX) {   //去除左右边界
-                //当滑动出范围的话，不绘制，去除左右边界
+                    //当滑动出范围的话，不绘制，去除左右边界
                 } else {
-                    canvas.drawLine(0, 0, 0, smallScaleHeight, smallScalePaint);
+                    canvas.drawLine(0, 0, 0, scaleHeight, smallScalePaint);
                 }
             }
             ++num1;//刻度加1
             curPos += scaleGap;//绘制屏幕的距离在原有基础上+1个刻度间距
             canvas.translate(scaleGap, 0); //移动画布到下一个刻度
         }
+
+//        while (curPos < width) {
+//            if (num1 % scaleCount == 0) {
+//                //绘制整点刻度以及文字
+//                if ((moveX < 0 ||curPos > moveX - scaleGap) || width / 2 - curPos > getWhichScalMovex(maxScale + 1) - moveX) {   //去除左右边界
+//                    //当滑动出范围的话，不绘制，去除左右边界
+//                    //绘制刻度，绘制刻度数字
+//                    canvas.drawLine(0, 0, 0, midScaleHeight, midScalePaint);
+//                    scaleNumPaint.getTextBounds(num1 / scaleGap + minScale + "", 0, (num1 / scaleGap + minScale + "").length(), scaleNumRect);
+//                    canvas.drawText(num1 / scaleCount + minScale + "", -scaleNumRect.width() / 2, lagScaleHeight +
+//                            (rulerHeight - lagScaleHeight) / 2 + scaleNumRect.height(), scaleNumPaint);
+//                }
+//            } else {
+//                //绘制每10分钟刻度
+//                if ((moveX < 0 || curPos > moveX) || width / 2 - curPos > getWhichScalMovex(maxScale) - moveX) {   //去除左右边界
+//                    //当滑动出范围的话，不绘制，去除左右边界
+//                    canvas.drawLine(0, 0, 0, smallScaleHeight, smallScalePaint);
+//                }
+//            }
+//            ++num1;//刻度加1
+//            curPos += scaleGap;//绘制屏幕的距离在原有基础上+1个刻度间距
+//            canvas.translate(scaleGap, 0); //移动画布到下一个刻度
+//        }
         screenEndPos = num1;
         canvas.restore();
-        Log.d(TAG, "screenStartPos = "+screenStartPos+"     screenEndPos = "+screenEndPos);
-        if (progress>=screenEndPos){
-            canvas.drawLine(0,0,width,0,lagScalePaint);
-        }else if (progress<=screenStartPos){
-
-        }else {
-            canvas.drawLine(0,0,(progress-screenStartPos)*scaleGap+offsetX,0,lagScalePaint);
+        Log.d(TAG, "screenStartPos = " + screenStartPos + "     screenEndPos = " + screenEndPos);
+        //绘制进度条
+        if (progress > screenEndPos) {
+            canvas.drawLine(0, 0, width, 0, lagScalePaint);
+        } else if (progress > screenStartPos) {
+            canvas.drawLine(0, 0, (progress - screenStartPos) * scaleGap + offsetX, 0, lagScalePaint);
         }
         //绘制屏幕中间用来选中刻度的最大刻度
 //        canvas.drawLine(width / 2, 0, width / 2, lagScaleHeight, lagScalePaint);
@@ -518,7 +545,7 @@ public class SeekView extends View {
         if (!showScaleResult) {
             return;
         }
-        canvas.translate(0, -resultNumRect.height() - rulerToResultgap / 2);
+        canvas.translate(0, -resultNumRect.height() - topGap / 2);
         resultNumPaint.getTextBounds(resultText, 0, resultText.length(), resultNumRect);
         canvas.drawText(resultText, width / 2 - resultNumRect.width() / 2, resultNumRect.height(),
                 resultNumPaint);
@@ -528,11 +555,11 @@ public class SeekView extends View {
 
     private void drawBg(Canvas canvas) {
         bgRect.set(0, 0, width, height);
-        if (isBgRoundRect) {
-            canvas.drawRoundRect(bgRect, 20, 20, bgPaint); //20->椭圆的用于圆形角x-radius
-        } else {
+//        if (isBgRoundRect) {
+//            canvas.drawRoundRect(bgRect, 20, 20, bgPaint); //20->椭圆的用于圆形角x-radius
+//        } else {
             canvas.drawRect(bgRect, bgPaint);
-        }
+//        }
     }
 
     public interface OnChooseResulterListener {
@@ -546,8 +573,8 @@ public class SeekView extends View {
         invalidate();
     }
 
-    public void setRulerToResultgap(int rulerToResultgap) {
-        this.rulerToResultgap = rulerToResultgap;
+    public void setTopGap(int topGap) {
+        this.topGap = topGap;
         invalidate();
     }
 
