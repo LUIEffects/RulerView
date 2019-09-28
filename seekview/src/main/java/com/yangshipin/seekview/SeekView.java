@@ -266,6 +266,7 @@ public class SeekView extends View {
         velocityTracker.addMovement(event);
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                downX = event.getX();
                 curSlideType = getSlideType(event);
                 Log.d(TAG, "onTouchEvent: getSlideType=" + curSlideType.name());
                 if (curSlideType == SlideType.PANNEL) {
@@ -274,9 +275,10 @@ public class SeekView extends View {
                         valueAnimator.end();
                         valueAnimator.cancel();
                     }
-                    downX = event.getX();
+                } else if (curSlideType == SlideType.PROGRESS){
+
                 }
-                break;
+                    break;
             case MotionEvent.ACTION_MOVE:
                 if (curSlideType == SlideType.PANNEL) {
                     //滑动时候,通过假设的滑动距离,做超出左边界以及右边界的限制。
@@ -286,6 +288,8 @@ public class SeekView extends View {
                     } else if (moveX <= getWhichScalMovex(maxScale) + width / 2) {
                         moveX = getWhichScalMovex(maxScale) + width / 2;
                     }
+                }else if (curSlideType == SlideType.PROGRESS){
+                    progress = (int) (screenStartPos+currentX/scaleGap);
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -298,8 +302,7 @@ public class SeekView extends View {
                 }
                 break;
         }
-        if (curSlideType == SlideType.PANNEL)
-            invalidate();
+        invalidate();
         return true;
     }
 
