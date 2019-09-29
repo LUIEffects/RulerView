@@ -316,7 +316,7 @@ public class SeekView extends View {
         if (valueAnimator.isRunning()) {
             return;
         }
-        valueAnimator = ValueAnimator.ofInt(0, xVelocity / 20).setDuration(Math.abs(xVelocity / 10));
+        valueAnimator = ValueAnimator.ofInt( 0, xVelocity / 50).setDuration(Math.abs(xVelocity / 10));
         valueAnimator.setInterpolator(new DecelerateInterpolator());
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -387,26 +387,26 @@ public class SeekView extends View {
             rightScroll = (int) (scaleGap - Math.abs(offsetX));
 
             float moveX2 = offsetX <= scaleGap / 2 ? moveX - leftScroll : moveX + rightScroll;
-
+            moveX = moveX2;
             if (valueAnimator != null && !valueAnimator.isRunning()) {
-                valueAnimator = ValueAnimator.ofFloat(moveX, moveX2);
-                valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        moveX = (float) animation.getAnimatedValue();
-                        lastMoveX = moveX;
-                        invalidate();
-                    }
-                });
-                valueAnimator.addListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        super.onAnimationEnd(animation);
-                        //这里是滑动结束时候回调给使用者的结果值
-                    }
-                });
-                valueAnimator.setDuration(300);
-                valueAnimator.start();
+//                valueAnimator = ValueAnimator.ofFloat(moveX, moveX2);
+//                valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+//                    @Override
+//                    public void onAnimationUpdate(ValueAnimator animation) {
+//                        moveX = (float) animation.getAnimatedValue();
+//                        lastMoveX = moveX;
+//                        invalidate();
+//                    }
+//                });
+//                valueAnimator.addListener(new AnimatorListenerAdapter() {
+//                    @Override
+//                    public void onAnimationEnd(Animator animation) {
+//                        super.onAnimationEnd(animation);
+//                        //这里是滑动结束时候回调给使用者的结果值
+//                    }
+//                });
+//                valueAnimator.setDuration(100);
+//                valueAnimator.start();
                 isUp = false;
             }
 
