@@ -18,8 +18,6 @@ import android.view.VelocityTracker;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 
-import java.lang.ref.WeakReference;
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -111,7 +109,8 @@ public class SeekView extends View {
     private Paint scalePaint;
     private Paint progressPaint;
     private Paint txtPaint;
-    private Rect scaleNumRect;
+    private Rect timeTxtRect;
+    private Rect programTxtRect;
     private RectF bgRect;
     private int height, width;
     private int curPos = 0;
@@ -124,7 +123,7 @@ public class SeekView extends View {
     private int rightScroll;
     private int xVelocity;
     private SlideType curSlideType;
-    private boolean isDebug = true;
+    private boolean isDebug = false;
 
     public SeekView(Context context) {
         this(context, null);
@@ -211,7 +210,8 @@ public class SeekView extends View {
         txtPaint.setTextSize(scaleNumTextSize);
 
         bgRect = new RectF();
-        scaleNumRect = new Rect();
+        timeTxtRect = new Rect();
+        programTxtRect = new Rect();
 
         valueAnimator = new ValueAnimator();
 
@@ -373,7 +373,7 @@ public class SeekView extends View {
         num1 = -(int) (moveX / scaleGap);//小刻度值——>左侧最小的刻度值  //滑动刻度的整数部分
         offsetX = (moveX % scaleGap);//偏移量   //滑动刻度的小数部分
         screenStartPos = num1;
-        screenEndPos =screenStartPos+ width/scaleGap;
+        screenEndPos = screenStartPos + width / scaleGap;
         curPos = 0;  //准备开始绘制当前屏幕,从最左面开始
         /**
          * 这部分代码主要是计算手指抬起时，惯性滑动结束时，刻度需要停留的位置
@@ -419,19 +419,36 @@ public class SeekView extends View {
         /**
          * 绘制当前屏幕可见刻度
          */
-        while (curPos < width) {
-            if (num1 % scaleCount == 0) {
-                String txtSrc = num1 / scaleCount + minScale + "";
-                canvas.drawLine(0, 0, 0, scaleHeight * 2, scalePaint);
-                txtPaint.getTextBounds(txtSrc, 0, txtSrc.length(), scaleNumRect);
-                canvas.drawText(txtSrc, -scaleNumRect.width() / 2, scaleNumRect.height() + scaleHeight * 3, txtPaint);
-            } else {
-                canvas.drawLine(0, 0, 0, scaleHeight, scalePaint);
+        float posX;
+        if (dataList != null && !dataList.isEmpty()) {
+            for (int curIndex = 0; curIndex < dataList.size(); curIndex++) {
+                ScaleMsgObj scaleMsgObj = dataList.get(curIndex);
+                if (scaleMsgObj.pos >= screenStartPos && scaleMsgObj.pos <= screenEndPos) {
+                    posX = (scaleMsgObj.pos - screenStartPos) * scaleGap;
+                    //画那条破线
+                    canvas.drawLine(posX, 0, posX, scaleHeight * 2, scalePaint);
+                    //画时间
+                    txtPaint.getTextBounds(scaleMsgObj.time, 0, scaleMsgObj.time.length(), timeTxtRect);
+                    canvas.drawText(scaleMsgObj.time, posX, timeTxtRect.height() + scaleHeight * 3, txtPaint);
+                    //画节目预告
+                    txtPaint.getTextBounds(scaleMsgObj.txt, 0, scaleMsgObj.txt.length(), programTxtRect);
+                    canvas.drawText(scaleMsgObj.txt, posX, programTxtRect.height() + timeTxtRect.height() + scaleHeight * 4, txtPaint);
+                }
             }
-            ++num1;//刻度加1
-            curPos += scaleGap;//绘制屏幕的距离在原有基础上+1个刻度间距
-            canvas.translate(scaleGap, 0); //移动画布到下一个刻度
         }
+//        while (curPos < width) {
+//            if (num1 % scaleCount == 0) {
+//                String txtSrc = num1 / scaleCount + minScale + "";
+//                canvas.drawLine(0, 0, 0, scaleHeight * 2, scalePaint);
+//                txtPaint.getTextBounds(txtSrc, 0, txtSrc.length(), timeTxtRect);
+//                canvas.drawText(txtSrc, -timeTxtRect.width() / 2, timeTxtRect.height() + scaleHeight * 3, txtPaint);
+//            } else {
+//                canvas.drawLine(0, 0, 0, scaleHeight, scalePaint);
+//            }
+//            ++num1;//刻度加1
+//            curPos += scaleGap;//绘制屏幕的距离在原有基础上+1个刻度间距
+//            canvas.translate(scaleGap, 0); //移动画布到下一个刻度
+//        }
         canvas.restore();
         Log.d(TAG, "screenStartPos = " + screenStartPos + "     screenEndPos = " + screenEndPos);
         /**

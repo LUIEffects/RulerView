@@ -19,7 +19,7 @@
         lsp:progressGrooveStroke="2dp"
         lsp:resultNumTextSize="20sp"
         lsp:scaleCount="6"
-        lsp:scaleGap="10dp"
+        lsp:scaleGap="30dp"
         lsp:scaleNumTextSize="16sp"
         lsp:topGap="25dp"
         lsp:txtColor="#666666"
