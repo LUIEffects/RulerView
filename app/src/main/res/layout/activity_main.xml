@@ -45,7 +45,7 @@
         lsp:isBgRoundRect="true"
         lsp:largeScaleColor="#50b586"
         lsp:largeScaleStroke="5dp"
-        lsp:maxScale="10000"
+        lsp:maxScale="100"
         lsp:midScaleColor="#999999"
         lsp:midScaleStroke="3dp"
         lsp:minScale="0"

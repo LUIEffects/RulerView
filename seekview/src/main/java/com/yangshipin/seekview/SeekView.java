@@ -26,6 +26,11 @@ import java.math.BigDecimal;
  * @since 2019-09-28
  */
 public class SeekView extends View {
+
+    private enum SlideType {
+        PANNEL, PROGRESS
+    }
+
     private static final String TAG = "SeekView";
     /**
      * 文案高度
@@ -256,10 +261,6 @@ public class SeekView extends View {
 //        drawResultText(canvas, resultText);
     }
 
-    private enum SlideType {
-        PANNEL, PROGRESS
-    }
-
     private SlideType getSlideType(MotionEvent downEvent) {
         float x = downEvent.getX();
         float y = downEvent.getY();
@@ -434,57 +435,17 @@ public class SeekView extends View {
         //绘制当前屏幕可见刻度,不需要裁剪屏幕,while循环只会执行·屏幕宽度/刻度宽度·次
         while (curPos < width) {
             if (num1 % scaleCount == 0) {
-                //绘制整点刻度以及文字
-                boolean isSlide2LeftBound = (moveX >= 0 && curPos < moveX - scaleGap);
-                boolean isSlide2RightBound = (curPos >= width / 2 + moveX - getWhichScalMovex(maxScale + 1));
-                if (isSlide2LeftBound || isSlide2RightBound) {   //去除左右边界
-//                    Log.d(TAG, "drawScaleAndNum: ");
-                    //当滑动出范围的话，不绘制，去除左右边界
-                } else {
-                    //绘制刻度，绘制刻度数字
-                    String txtSrc = num1 / scaleCount + minScale + "";
-                    canvas.drawLine(0, 0, 0, scaleHeight * 2, scalePaint);
-
-                    txtPaint.getTextBounds(txtSrc, 0, txtSrc.length(), scaleNumRect);
-
-                    canvas.drawText(txtSrc, -scaleNumRect.width() / 2, scaleNumRect.height() + scaleHeight * 3, txtPaint);
-                }
-
+                String txtSrc = num1 / scaleCount + minScale + "";
+                canvas.drawLine(0, 0, 0, scaleHeight * 2, scalePaint);
+                txtPaint.getTextBounds(txtSrc, 0, txtSrc.length(), scaleNumRect);
+                canvas.drawText(txtSrc, -scaleNumRect.width() / 2, scaleNumRect.height() + scaleHeight * 3, txtPaint);
             } else {
-                //绘制每10分钟刻度
-                if ((moveX >= 0 && curPos < moveX) || width / 2 - curPos < getWhichScalMovex(maxScale) - moveX) {   //去除左右边界
-                    //当滑动出范围的话，不绘制，去除左右边界
-                } else {
-                    canvas.drawLine(0, 0, 0, scaleHeight, scalePaint);
-                }
+                canvas.drawLine(0, 0, 0, scaleHeight, scalePaint);
             }
             ++num1;//刻度加1
             curPos += scaleGap;//绘制屏幕的距离在原有基础上+1个刻度间距
             canvas.translate(scaleGap, 0); //移动画布到下一个刻度
         }
-
-//        while (curPos < width) {
-//            if (num1 % scaleCount == 0) {
-//                //绘制整点刻度以及文字
-//                if ((moveX < 0 ||curPos > moveX - scaleGap) || width / 2 - curPos > getWhichScalMovex(maxScale + 1) - moveX) {   //去除左右边界
-//                    //当滑动出范围的话，不绘制，去除左右边界
-//                    //绘制刻度，绘制刻度数字
-//                    canvas.drawLine(0, 0, 0, midScaleHeight, midScalePaint);
-//                    txtPaint.getTextBounds(num1 / scaleGap + minScale + "", 0, (num1 / scaleGap + minScale + "").length(), scaleNumRect);
-//                    canvas.drawText(num1 / scaleCount + minScale + "", -scaleNumRect.width() / 2, lagScaleHeight +
-//                            (txtHeight - lagScaleHeight) / 2 + scaleNumRect.height(), txtPaint);
-//                }
-//            } else {
-//                //绘制每10分钟刻度
-//                if ((moveX < 0 || curPos > moveX) || width / 2 - curPos > getWhichScalMovex(maxScale) - moveX) {   //去除左右边界
-//                    //当滑动出范围的话，不绘制，去除左右边界
-//                    canvas.drawLine(0, 0, 0, smallScaleHeight, smallScalePaint);
-//                }
-//            }
-//            ++num1;//刻度加1
-//            curPos += scaleGap;//绘制屏幕的距离在原有基础上+1个刻度间距
-//            canvas.translate(scaleGap, 0); //移动画布到下一个刻度
-//        }
         screenEndPos = num1;
         canvas.restore();
 //        Log.d(TAG, "screenStartPos = " + screenStartPos + "     screenEndPos = " + screenEndPos);
