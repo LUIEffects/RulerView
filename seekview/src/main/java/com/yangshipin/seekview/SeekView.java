@@ -20,6 +20,7 @@ import android.view.animation.DecelerateInterpolator;
 
 import java.lang.ref.WeakReference;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author taitsun
@@ -82,10 +83,6 @@ public class SeekView extends View {
     private int progressGrooveColor = 0xff999999;
     private int progressColor = 0xffff0000;
     /**
-     * 结果字体大小
-     */
-    private int resultNumTextSize = 20;
-    /**
      * 刻度字体大小
      */
     private int scaleNumTextSize = 16;
@@ -96,11 +93,16 @@ public class SeekView extends View {
     private int screenStartPos;
     private int screenEndPos;
 
+    private List<ScaleMsgObj> dataList;
+
+    public void refreshData(List<ScaleMsgObj> dataList) {
+        this.dataList = dataList;
+    }
+
     /**
      * 结果回调
      */
     private OnInteractListener onInteractListener;
-    //    private OnChooseResulterListener onChooseResulterListener;
     private ValueAnimator valueAnimator;
     private VelocityTracker velocityTracker = VelocityTracker.obtain();
     private String resultText = String.valueOf(firstScale);
@@ -109,9 +111,7 @@ public class SeekView extends View {
     private Paint scalePaint;
     private Paint progressPaint;
     private Paint txtPaint;
-    private Paint resultValPaint;
     private Rect scaleNumRect;
-    private Rect resultNumRect;
     private RectF bgRect;
     private int height, width;
     private int curPos = 0;
@@ -143,10 +143,6 @@ public class SeekView extends View {
     public void setOnInteractListener(OnInteractListener onInteractListener) {
         this.onInteractListener = onInteractListener;
     }
-
-    //    public void setOnChooseResulterListener(OnChooseResulterListener onChooseResulterListener) {
-//        this.onChooseResulterListener = onChooseResulterListener;
-//    }
 
     private void setAttr(AttributeSet attrs, int defStyleAttr) {
 
@@ -182,9 +178,6 @@ public class SeekView extends View {
         progressGrooveStroke = typedArray.getDimensionPixelSize(R.styleable.SeekView_progressGrooveStroke, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, progressGrooveStroke, getResources().getDisplayMetrics()));
 
-        resultNumTextSize = typedArray.getDimensionPixelSize(R.styleable.SeekView_resultNumTextSize, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_SP, resultNumTextSize, getResources().getDisplayMetrics()));
-
         scaleNumTextSize = typedArray.getDimensionPixelSize(R.styleable.SeekView_scaleNumTextSize, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, scaleNumTextSize, getResources().getDisplayMetrics()));
         typedArray.recycle();
@@ -197,16 +190,13 @@ public class SeekView extends View {
         scalePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         progressPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         txtPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        resultValPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         testPaint.setColor(0xff00ff00);
         bgPaint.setColor(bgColor);
         scalePaint.setColor(scaleColor);
         txtPaint.setColor(txtColor);
-        resultValPaint.setColor(txtColor);
 
         testPaint.setStyle(Paint.Style.FILL);
-        resultValPaint.setStyle(Paint.Style.FILL);
         bgPaint.setStyle(Paint.Style.FILL);
         scalePaint.setStyle(Paint.Style.FILL);
         progressPaint.setStyle(Paint.Style.FILL);
@@ -218,14 +208,10 @@ public class SeekView extends View {
         scalePaint.setStrokeWidth(scaleStroke);
         progressPaint.setStrokeWidth(progressGrooveStroke);
 
-        resultValPaint.setTextSize(resultNumTextSize);
         txtPaint.setTextSize(scaleNumTextSize);
 
         bgRect = new RectF();
-        resultNumRect = new Rect();
         scaleNumRect = new Rect();
-
-        resultValPaint.getTextBounds(resultText, 0, resultText.length(), resultNumRect);
 
         valueAnimator = new ValueAnimator();
 
@@ -258,7 +244,6 @@ public class SeekView extends View {
     protected void onDraw(Canvas canvas) {
         drawBg(canvas);
         drawScaleAndNum(canvas);
-//        drawResultText(canvas, resultText);
     }
 
     private SlideType getSlideType(MotionEvent downEvent) {
@@ -386,8 +371,9 @@ public class SeekView extends View {
         }
 
         num1 = -(int) (moveX / scaleGap);//小刻度值——>左侧最小的刻度值  //滑动刻度的整数部分
-        screenStartPos = num1;
         offsetX = (moveX % scaleGap);//偏移量   //滑动刻度的小数部分
+        screenStartPos = num1;
+        screenEndPos =screenStartPos+ width/scaleGap;
         curPos = 0;  //准备开始绘制当前屏幕,从最左面开始
         /**
          * 这部分代码主要是计算手指抬起时，惯性滑动结束时，刻度需要停留的位置
@@ -417,9 +403,6 @@ public class SeekView extends View {
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
                         //这里是滑动结束时候回调给使用者的结果值
-//                        if (onChooseResulterListener != null) {
-//                            onChooseResulterListener.onEndResult(resultText);
-//                        }
                     }
                 });
                 valueAnimator.setDuration(300);
@@ -432,11 +415,7 @@ public class SeekView extends View {
         }
         canvas.save();
         canvas.translate(offsetX, progressGrooveStroke);    //不加该偏移的话，滑动时刻度不会落在0~1之间只会落在整数上面,其实这个都能设置一种模式了，毕竟初衷就是指针不会落在小数上面
-        //这里是滑动时候不断回调给使用者的结果值
-//        resultText = String.valueOf(new WeakReference<>(new BigDecimal((width / 2 - moveX) / scaleGap)).get().setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + minScale);
-//        if (onChooseResulterListener != null) {
-//            onChooseResulterListener.onScrollResult(resultText);
-//        }
+//        canvas.drawPoint(0,0,testPaint);
         /**
          * 绘制当前屏幕可见刻度
          */
@@ -453,10 +432,11 @@ public class SeekView extends View {
             curPos += scaleGap;//绘制屏幕的距离在原有基础上+1个刻度间距
             canvas.translate(scaleGap, 0); //移动画布到下一个刻度
         }
-        screenEndPos = num1;
         canvas.restore();
-//        Log.d(TAG, "screenStartPos = " + screenStartPos + "     screenEndPos = " + screenEndPos);
-        //绘制进度条
+        Log.d(TAG, "screenStartPos = " + screenStartPos + "     screenEndPos = " + screenEndPos);
+        /**
+         * 绘制进度条
+         */
         if (progress < screenStartPos) {
             progressPaint.setColor(progressGrooveColor);
             canvas.drawLine(0, 0, width, 0, progressPaint);
@@ -483,14 +463,6 @@ public class SeekView extends View {
         //绘制屏幕中间用来选中刻度的最大刻度
 //        canvas.drawLine(width / 2, 0, width / 2, lagScaleHeight, progressPaint);
 
-    }
-
-    //绘制上面的结果 结果值+单位
-    private void drawResultText(Canvas canvas, String resultText) {
-        canvas.translate(0, -resultNumRect.height() - topGap / 2);
-        resultValPaint.getTextBounds(resultText, 0, resultText.length(), resultNumRect);
-        canvas.drawText(resultText, width / 2 - resultNumRect.width() / 2, resultNumRect.height(),
-                resultValPaint);
     }
 
     private void drawBg(Canvas canvas) {
@@ -555,11 +527,6 @@ public class SeekView extends View {
 
     public void setProgressGrooveStroke(int progressGrooveStroke) {
         this.progressGrooveStroke = progressGrooveStroke;
-        invalidate();
-    }
-
-    public void setResultNumTextSize(int resultNumTextSize) {
-        this.resultNumTextSize = resultNumTextSize;
         invalidate();
     }
 
