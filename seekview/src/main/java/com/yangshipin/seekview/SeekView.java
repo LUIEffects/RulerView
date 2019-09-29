@@ -288,7 +288,9 @@ public class SeekView extends View {
                         valueAnimator.cancel();
                     }
                 } else if (curSlideType == SlideType.PROGRESS) {
-
+                    progress = (int) (screenStartPos + currentX / scaleGap);
+                    if (onInteractListener != null)
+                        onInteractListener.onProgressUpdate(progress);
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -387,7 +389,10 @@ public class SeekView extends View {
         screenStartPos = num1;
         offsetX = (moveX % scaleGap);//偏移量   //滑动刻度的小数部分
         curPos = 0;  //准备开始绘制当前屏幕,从最左面开始
-        if (isUp) {   //这部分代码主要是计算手指抬起时，惯性滑动结束时，刻度需要停留的位置
+        /**
+         * 这部分代码主要是计算手指抬起时，惯性滑动结束时，刻度需要停留的位置
+         */
+        if (isUp) {
             offsetX = ((moveX - width / 2 % scaleGap) % scaleGap);
             if (offsetX <= 0) {
                 offsetX = scaleGap - Math.abs(offsetX);
@@ -432,7 +437,9 @@ public class SeekView extends View {
 //        if (onChooseResulterListener != null) {
 //            onChooseResulterListener.onScrollResult(resultText);
 //        }
-        //绘制当前屏幕可见刻度,不需要裁剪屏幕,while循环只会执行·屏幕宽度/刻度宽度·次
+        /**
+         * 绘制当前屏幕可见刻度
+         */
         while (curPos < width) {
             if (num1 % scaleCount == 0) {
                 String txtSrc = num1 / scaleCount + minScale + "";
