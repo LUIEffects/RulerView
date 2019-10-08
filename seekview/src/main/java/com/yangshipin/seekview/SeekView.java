@@ -59,7 +59,7 @@ public class SeekView extends View {
     /**
      * 第一次显示的刻度
      */
-    private float firstScale = 50f;
+    private long firstScale;
     /**
      * 刻度最大值
      */
@@ -170,11 +170,7 @@ public class SeekView extends View {
 
         per10Min2Px = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, PER_10MIN_2_DP, getResources().getDisplayMetrics());
 
-//        minScale = typedArray.getInt(R.styleable.SeekView_minScale, minScale);
-
-        firstScale = typedArray.getFloat(R.styleable.SeekView_firstScale, firstScale);
-
-//        maxScale = typedArray.getInt(R.styleable.SeekView_maxScale, maxScale);
+        firstScale = liveProgress;
 
         bgColor = typedArray.getColor(R.styleable.SeekView_bgColor, bgColor);
 
@@ -535,15 +531,15 @@ public class SeekView extends View {
         invalidate();
     }
 
-    public void setFirstScale(float firstScale) {
-        this.firstScale = firstScale;
-        invalidate();
-    }
+//    public void setFirstScale(float firstScale) {
+//        this.firstScale = firstScale;
+//        invalidate();
+//    }
 
-    public void setMaxScale(int maxScale) {
-        this.maxScale = maxScale;
-        invalidate();
-    }
+//    public void setMaxScale(int maxScale) {
+//        this.maxScale = maxScale;
+//        invalidate();
+//    }
 
     public void setBgColor(int bgColor) {
         this.bgColor = bgColor;
