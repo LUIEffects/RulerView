@@ -6,7 +6,7 @@
         <attr name="txtHeight" format="dimension"/>
         <attr name="topGap" format="dimension" />          <!--尺子距离结果的高度-->
         <attr name="progressGap" format="dimension"/>
-        <attr name="per10Min2DP" format="dimension" />                  <!--刻度间距-->
+        <attr name="per10Min2Px" format="dimension" />                  <!--刻度间距-->
         <attr name="scaleCount" format="integer" />                  <!--刻度数-->
         <attr name="firstScale" format="float" />                    <!--默认选中的刻度-->
         <attr name="maxScale" format="integer" />                    <!--最大刻度-->

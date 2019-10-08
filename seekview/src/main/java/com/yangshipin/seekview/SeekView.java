@@ -27,6 +27,9 @@ import java.util.List;
  */
 public class SeekView extends View {
 
+    //每10分钟对应多少dp
+    private static final int PER_10MIN_2_DP = 20;
+
     private enum SlideType {
         PANEL, PROGRESS
     }
@@ -48,7 +51,7 @@ public class SeekView extends View {
     /**
      * 刻度间距
      */
-    private int per10Min2DP = 20;
+    private int per10Min2Px;
     /**
      * 刻度最小值
      */
@@ -87,15 +90,18 @@ public class SeekView extends View {
     private int scaleNumTextSize = 16;
     private int scaleHeight = 3;
 
-    private int progress = 72;
+    private long liveProgress = 72;
+    private long seekProgress = 72;
 
     private int screenStartPos;
     private int screenEndPos;
 
     private List<SeekViewDataObj.ScaleMsgObj> dataList;
+    private SeekViewDataObj seekViewDataObj;
 
 
-    public void refreshData(SeekViewDataObj seekViewDataObj){
+    public void refreshData(SeekViewDataObj data) {
+        this.seekViewDataObj = data;
         this.dataList = seekViewDataObj.getScaleMsgObjList();
     }
 
@@ -163,8 +169,7 @@ public class SeekView extends View {
 
         scaleCount = typedArray.getInt(R.styleable.SeekView_scaleCount, scaleCount);
 
-        per10Min2DP = typedArray.getDimensionPixelSize(R.styleable.SeekView_per10Min2DP, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, per10Min2DP, getResources().getDisplayMetrics()));
+        per10Min2Px = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, PER_10MIN_2_DP, getResources().getDisplayMetrics());
 
         minScale = typedArray.getInt(R.styleable.SeekView_minScale, minScale);
 
@@ -245,7 +250,8 @@ public class SeekView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         drawBg(canvas);
-        drawScaleAndNum(canvas);
+        if (seekViewDataObj != null)
+            drawScaleAndNum(canvas);
     }
 
     private SlideType getSlideType(MotionEvent downEvent) {
@@ -275,9 +281,9 @@ public class SeekView extends View {
                         valueAnimator.cancel();
                     }
                 } else if (curSlideType == SlideType.PROGRESS) {
-                    progress = (int) (screenStartPos + currentX / per10Min2DP);
+                    seekProgress = Math.min((int) (screenStartPos + currentX / per10Min2Px), liveProgress);
                     if (onInteractListener != null)
-                        onInteractListener.onProgressUpdate(progress);
+                        onInteractListener.onProgressUpdate(seekProgress);
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -290,9 +296,9 @@ public class SeekView extends View {
                         moveX = getWhichScalMovex(maxScale) + width / 2;
                     }
                 } else if (curSlideType == SlideType.PROGRESS) {
-                    progress = (int) (screenStartPos + currentX / per10Min2DP);
+                    seekProgress = Math.min((int) (screenStartPos + currentX / per10Min2Px), liveProgress);
                     if (onInteractListener != null)
-                        onInteractListener.onProgressUpdate(progress);
+                        onInteractListener.onProgressUpdate(seekProgress);
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -318,7 +324,7 @@ public class SeekView extends View {
         if (valueAnimator.isRunning()) {
             return;
         }
-        valueAnimator = ValueAnimator.ofInt( 0, xVelocity / 50).setDuration(Math.abs(xVelocity / 10));
+        valueAnimator = ValueAnimator.ofInt(0, xVelocity / 50).setDuration(Math.abs(xVelocity / 10));
         valueAnimator.setInterpolator(new DecelerateInterpolator());
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -346,14 +352,14 @@ public class SeekView extends View {
     }
 
     /**
-     * 计算出屏幕左侧相较于内容左侧的偏移距离
+     * 计算出屏幕左侧相较于内容左侧的偏移距离 单位：px
      *
      * @param scale
      * @return
      */
     private float getWhichScalMovex(float scale) {
 
-        return width / 2 - per10Min2DP * (scale - minScale);
+        return width / 2 - per10Min2Px * (scale - minScale);
     }
 
     private void drawScaleAndNum(Canvas canvas) {
@@ -372,23 +378,23 @@ public class SeekView extends View {
             firstScale = -1;//将结果置为-1，下次不再计算初始位置
         }
 
-        num1 = -(int) (moveX / per10Min2DP);//小刻度值——>左侧最小的刻度值  //滑动刻度的整数部分
-        offsetX = (moveX % per10Min2DP);//偏移量   //滑动刻度的小数部分
+        num1 = -(int) (moveX / per10Min2Px);//小刻度值——>左侧最小的刻度值  //滑动刻度的整数部分
+        offsetX = (moveX % per10Min2Px);//偏移量   //滑动刻度的小数部分
         screenStartPos = num1;
-        screenEndPos = screenStartPos + width / per10Min2DP;
+        screenEndPos = screenStartPos + width / per10Min2Px;
         curPos = 0;  //准备开始绘制当前屏幕,从最左面开始
         /**
          * 这部分代码主要是计算手指抬起时，惯性滑动结束时，刻度需要停留的位置
          */
         if (isUp) {
-            offsetX = ((moveX - width / 2 % per10Min2DP) % per10Min2DP);
+            offsetX = ((moveX - width / 2 % per10Min2Px) % per10Min2Px);
             if (offsetX <= 0) {
-                offsetX = per10Min2DP - Math.abs(offsetX);
+                offsetX = per10Min2Px - Math.abs(offsetX);
             }
             leftScroll = (int) Math.abs(offsetX);
-            rightScroll = (int) (per10Min2DP - Math.abs(offsetX));
+            rightScroll = (int) (per10Min2Px - Math.abs(offsetX));
 
-            float moveX2 = offsetX <= per10Min2DP / 2 ? moveX - leftScroll : moveX + rightScroll;
+            float moveX2 = offsetX <= per10Min2Px / 2 ? moveX - leftScroll : moveX + rightScroll;
             moveX = moveX2;
             if (valueAnimator != null && !valueAnimator.isRunning()) {
 //                valueAnimator = ValueAnimator.ofFloat(moveX, moveX2);
@@ -412,8 +418,8 @@ public class SeekView extends View {
                 isUp = false;
             }
 
-            num1 = (int) -(moveX / per10Min2DP);
-            offsetX = (moveX % per10Min2DP);
+            num1 = (int) -(moveX / per10Min2Px);
+            offsetX = (moveX % per10Min2Px);
         }
         canvas.save();
         canvas.translate(offsetX, progressGrooveStroke);    //不加该偏移的话，滑动时刻度不会落在0~1之间只会落在整数上面,其实这个都能设置一种模式了，毕竟初衷就是指针不会落在小数上面
@@ -426,7 +432,7 @@ public class SeekView extends View {
             for (int curIndex = 0; curIndex < dataList.size(); curIndex++) {
                 SeekViewDataObj.ScaleMsgObj scaleMsgObj = dataList.get(curIndex);
                 if (scaleMsgObj.pos >= screenStartPos && scaleMsgObj.pos <= screenEndPos) {
-                    posX = (scaleMsgObj.pos - screenStartPos) * per10Min2DP;
+                    posX = (scaleMsgObj.pos - screenStartPos) * per10Min2Px;
                     //画那条破线
                     canvas.drawLine(posX, 0, posX, scaleHeight * 2, scalePaint);
                     //画时间
@@ -448,32 +454,38 @@ public class SeekView extends View {
 //                canvas.drawLine(0, 0, 0, scaleHeight, scalePaint);
 //            }
 //            ++num1;//刻度加1
-//            curPos += per10Min2DP;//绘制屏幕的距离在原有基础上+1个刻度间距
-//            canvas.translate(per10Min2DP, 0); //移动画布到下一个刻度
+//            curPos += per10Min2Px;//绘制屏幕的距离在原有基础上+1个刻度间距
+//            canvas.translate(per10Min2Px, 0); //移动画布到下一个刻度
 //        }
         canvas.restore();
         Log.d(TAG, "screenStartPos = " + screenStartPos + "     screenEndPos = " + screenEndPos);
         /**
          * 绘制进度条
          */
-        if (progress < screenStartPos) {
+        if (liveProgress < screenStartPos) {
             progressPaint.setColor(progressGrooveColor);
             canvas.drawLine(0, 0, width, 0, progressPaint);
-        } else if (progress <= screenEndPos) {
+        } else if (liveProgress <= screenEndPos) {
             progressPaint.setColor(progressColor);
-            canvas.drawLine(0, 0, (progress - screenStartPos) * per10Min2DP + offsetX, 0, progressPaint);
+            canvas.drawLine(0, 0, (liveProgress - screenStartPos) * per10Min2Px + offsetX, 0, progressPaint);
 
             progressPaint.setColor(progressGrooveColor);
-            canvas.drawLine((progress - screenStartPos) * per10Min2DP + offsetX, 0, width, 0, progressPaint);
+            canvas.drawLine((liveProgress - screenStartPos) * per10Min2Px + offsetX, 0, width, 0, progressPaint);
 
             progressPaint.setColor(progressColor);
             progressPaint.setStrokeWidth(progressGrooveStroke * 3);
-            canvas.drawPoint((progress - screenStartPos) * per10Min2DP + offsetX, 0, progressPaint);
+            canvas.drawPoint((seekProgress - screenStartPos) * per10Min2Px + offsetX, 0, progressPaint);
 
             progressPaint.setStrokeWidth(progressGrooveStroke);
-        } else if (progress > screenEndPos) {
+        } else if (liveProgress > screenEndPos) {
             progressPaint.setColor(progressColor);
             canvas.drawLine(0, 0, width, 0, progressPaint);
+
+            progressPaint.setColor(progressColor);
+            progressPaint.setStrokeWidth(progressGrooveStroke * 3);
+            canvas.drawPoint((seekProgress - screenStartPos) * per10Min2Px + offsetX, 0, progressPaint);
+
+            progressPaint.setStrokeWidth(progressGrooveStroke);
         }
         if (isDebug) {
             canvas.translate(0, progressGap / 2);
@@ -496,7 +508,7 @@ public class SeekView extends View {
     }
 
     public interface OnInteractListener {
-        void onProgressUpdate(int progress);
+        void onProgressUpdate(long progress);
     }
 
     public void setTxtHeight(int txtHeight) {
@@ -514,8 +526,8 @@ public class SeekView extends View {
         invalidate();
     }
 
-    public void setPer10Min2DP(int per10Min2DP) {
-        this.per10Min2DP = per10Min2DP;
+    public void setPer10Min2Px(int per10Min2Px) {
+        this.per10Min2Px = per10Min2Px;
         invalidate();
     }
 
@@ -554,10 +566,10 @@ public class SeekView extends View {
         invalidate();
     }
 
-    public int getScreenWidth2Sec(){
+    public int getScreenWidth2Sec() {
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         int screenWidth2Dp = px2dip(getContext(), displayMetrics.widthPixels);
-        return (int) ((screenWidth2Dp*1.0 / per10Min2DP) * 60);
+        return (int) ((screenWidth2Dp * 1.0 / per10Min2Px) * 60);
     }
 
     public static int px2dip(Context context, float pxValue) {
