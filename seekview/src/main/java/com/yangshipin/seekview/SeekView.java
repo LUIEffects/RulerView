@@ -348,12 +348,10 @@ public class SeekView extends View {
 
     /**
      * 计算出屏幕左侧相较于内容左侧的偏移距离 单位：px
-     *
      * @param scale
      * @return
      */
     private float getWhichScaleMovePx(float scale) {
-
         return width / 2 - per10Min2Px * (scale - minScale);
     }
 
