@@ -55,7 +55,7 @@ public class SeekView extends View {
     /**
      * 刻度最小值
      */
-    private int minScale = 0;
+    private long minScale = 0;
     /**
      * 第一次显示的刻度
      */
@@ -63,7 +63,7 @@ public class SeekView extends View {
     /**
      * 刻度最大值
      */
-    private int maxScale = 100;
+    private long maxScale = 100;
 
     /**
      * 背景颜色
@@ -111,7 +111,6 @@ public class SeekView extends View {
     private OnInteractListener onInteractListener;
     private ValueAnimator valueAnimator;
     private VelocityTracker velocityTracker = VelocityTracker.obtain();
-    private String resultText = String.valueOf(firstScale);
     private Paint testPaint;
     private Paint bgPaint;
     private Paint scalePaint;
@@ -171,11 +170,11 @@ public class SeekView extends View {
 
         per10Min2Px = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, PER_10MIN_2_DP, getResources().getDisplayMetrics());
 
-        minScale = typedArray.getInt(R.styleable.SeekView_minScale, minScale);
+//        minScale = typedArray.getInt(R.styleable.SeekView_minScale, minScale);
 
         firstScale = typedArray.getFloat(R.styleable.SeekView_firstScale, firstScale);
 
-        maxScale = typedArray.getInt(R.styleable.SeekView_maxScale, maxScale);
+//        maxScale = typedArray.getInt(R.styleable.SeekView_maxScale, maxScale);
 
         bgColor = typedArray.getColor(R.styleable.SeekView_bgColor, bgColor);
 
@@ -292,8 +291,8 @@ public class SeekView extends View {
                     moveX = currentX - downX + lastMoveX;
                     if (moveX >= 0) {
                         moveX = 0;
-                    } else if (moveX <= getWhichScalMovex(maxScale) + width / 2) {
-                        moveX = getWhichScalMovex(maxScale) + width / 2;
+                    } else if (moveX <= getWhichScaleMovePx(maxScale) + width / 2) {
+                        moveX = getWhichScaleMovePx(maxScale) + width / 2;
                     }
                 } else if (curSlideType == SlideType.PROGRESS) {
                     seekProgress = Math.min((int) (screenStartPos + currentX / per10Min2Px), liveProgress);
@@ -332,8 +331,8 @@ public class SeekView extends View {
                 moveX += (int) animation.getAnimatedValue();
                 if (moveX >= 0) {
                     moveX = 0;
-                } else if (moveX <= getWhichScalMovex(maxScale) + width / 2) {
-                    moveX = getWhichScalMovex(maxScale) + width / 2;
+                } else if (moveX <= getWhichScaleMovePx(maxScale) + width / 2) {
+                    moveX = getWhichScaleMovePx(maxScale) + width / 2;
                 }
                 lastMoveX = moveX;
                 invalidate();
@@ -357,7 +356,7 @@ public class SeekView extends View {
      * @param scale
      * @return
      */
-    private float getWhichScalMovex(float scale) {
+    private float getWhichScaleMovePx(float scale) {
 
         return width / 2 - per10Min2Px * (scale - minScale);
     }
@@ -373,7 +372,7 @@ public class SeekView extends View {
         float offsetX;
 
         if (firstScale != -1) {   //第一次进来的时候计算出默认刻度对应的假设滑动的距离moveX
-            moveX = getWhichScalMovex(firstScale);////如果设置了默认滑动位置，计算出需要滑动的距离
+            moveX = getWhichScaleMovePx(firstScale);////如果设置了默认滑动位置，计算出需要滑动的距离
             lastMoveX = moveX;
             firstScale = -1;//将结果置为-1，下次不再计算初始位置
         }

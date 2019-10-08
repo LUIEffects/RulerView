@@ -56,7 +56,7 @@ public class SeekViewActivity extends AppCompatActivity {
         seekView.refreshData(seekViewDataObj);
         seekView.setOnInteractListener(new SeekView.OnInteractListener() {
             @Override
-            public void onProgressUpdate(int progress) {
+            public void onProgressUpdate(long progress) {
                 mTv.setText("" + progress);
             }
         });
