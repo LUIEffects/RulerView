@@ -19,11 +19,17 @@
         lsp:progressGrooveStroke="2dp"
         lsp:resultNumTextSize="20sp"
         lsp:scaleCount="6"
-        lsp:scaleGap="30dp"
+        lsp:per10Min2DP="30dp"
         lsp:scaleNumTextSize="16sp"
         lsp:topGap="25dp"
         lsp:txtColor="#666666"
         lsp:txtHeight="40dp" />
+
+    <SeekBar
+        android:layout_width="match_parent"
+        android:layout_marginTop="50dp"
+        android:max="10"
+        android:layout_height="5dp" />
 
     <TextView
         android:id="@+id/mTv"

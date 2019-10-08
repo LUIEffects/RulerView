@@ -17,7 +17,7 @@
         <attr name="rulerHeight" format="dimension" />               <!--尺子的高度-->
         <attr name="rulerWidth" format="dimension" />                 <!--尺子的宽度-->
         <attr name="rulerToResultgap" format="dimension" />          <!--尺子距离结果的高度-->
-        <attr name="scaleGap" format="dimension" />                  <!--刻度间距-->
+        <attr name="per10Min2DP" format="dimension" />                  <!--刻度间距-->
         <attr name="scaleCount" format="integer" />                  <!--刻度数-->
         <attr name="firstScale" format="float" />                    <!--默认选中的刻度-->
         <attr name="maxScale" format="integer" />                    <!--最大刻度-->
@@ -50,7 +50,7 @@
     <!--<declare-styleable name="VerticalRulerView">-->
     <!--<attr name="rulerHeight" format="dimension" />               &lt;!&ndash;尺子的高度&ndash;&gt;-->
     <!--<attr name="rulerToResultgap" format="dimension" />          &lt;!&ndash;尺子距离结果的高度&ndash;&gt;-->
-    <!--<attr name="scaleGap" format="dimension" />                  &lt;!&ndash;刻度间距&ndash;&gt;-->
+    <!--<attr name="per10Min2DP" format="dimension" />                  &lt;!&ndash;刻度间距&ndash;&gt;-->
     <!--<attr name="scaleCount" format="integer" />                  &lt;!&ndash;刻度数&ndash;&gt;-->
     <!--<attr name="firstScale" format="float" />                    &lt;!&ndash;默认选中的刻度&ndash;&gt;-->
     <!--<attr name="maxScale" format="integer" />                    &lt;!&ndash;最大刻度&ndash;&gt;-->
