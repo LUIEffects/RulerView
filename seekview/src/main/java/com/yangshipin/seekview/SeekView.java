@@ -11,7 +11,6 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
@@ -44,10 +43,6 @@ public class SeekView extends View {
      */
     private int topGap = 20;
     private int progressGap = 20;
-    /**
-     * 刻度平分多少份
-     */
-    private int scaleCount = 2;  //刻度评分多少份
     /**
      * 刻度间距
      */
@@ -166,8 +161,6 @@ public class SeekView extends View {
 
         progressGap = typedArray.getDimensionPixelSize(R.styleable.SeekView_progressGap, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, progressGap, getResources().getDisplayMetrics()));
-
-        scaleCount = typedArray.getInt(R.styleable.SeekView_scaleCount, scaleCount);
 
         per10Min2Px = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, PER_10MIN_2_DP, getResources().getDisplayMetrics());
 
