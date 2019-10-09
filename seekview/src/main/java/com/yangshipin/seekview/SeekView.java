@@ -107,7 +107,7 @@ public class SeekView extends View {
         liveProgress = data.getPlayBackTime();
         seekProgress = data.getPlayBackTime();
         firstScale = liveProgress;
-        maxScale = Math.max(data.getPlayEndTime(), minScale+getScreenWidth2Sec());
+        maxScale = Math.max(data.getPlayEndTime(), minScale + getScreenWidth2Sec());
         invalidate();
     }
 
@@ -126,14 +126,10 @@ public class SeekView extends View {
     private Rect programTxtRect;
     private RectF bgRect;
     private int height, width;
-    private int curPos = 0;
     private float downX;
     private float moveX = 0;
     private float currentX;
     private float lastMoveX = 0;
-    private boolean isUp = false;
-    private int leftScroll;
-    private int rightScroll;
     private int xVelocity;
     private SlideType curSlideType;
     private boolean isDebug = false;
@@ -265,7 +261,6 @@ public class SeekView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         currentX = event.getX();
-        isUp = false;
         velocityTracker.computeCurrentVelocity(500);
         velocityTracker.addMovement(event);
         switch (event.getAction()) {
@@ -280,7 +275,7 @@ public class SeekView extends View {
                         valueAnimator.cancel();
                     }
                 } else if (curSlideType == SlideType.PROGRESS) {
-                    seekProgress = Math.min((int) (screenStartPos + currentX*1.0f / per10Min2Px*600), liveProgress);
+                    seekProgress = Math.min((int) (screenStartPos + currentX * 1.0f / per10Min2Px * 600), liveProgress);
                     if (onInteractListener != null)
                         onInteractListener.onProgressUpdate(seekProgress);
                 }
@@ -295,10 +290,10 @@ public class SeekView extends View {
                         moveX = getWhichScaleMovePx(maxScale) + width / 2;
                     }
                 } else if (curSlideType == SlideType.PROGRESS) {
-                    seekProgress = (int) (screenStartPos + currentX*1.0f / per10Min2Px*600);
-                    if (seekProgress>=liveProgress)
+                    seekProgress = (int) (screenStartPos + currentX * 1.0f / per10Min2Px * 600);
+                    if (seekProgress >= liveProgress)
                         seekProgress = liveProgress;
-                    if (seekProgress<=screenStartPos)
+                    if (seekProgress <= screenStartPos)
                         seekProgress = screenStartPos;
                     if (onInteractListener != null)
                         onInteractListener.onProgressUpdate(seekProgress);
@@ -321,7 +316,6 @@ public class SeekView extends View {
     private void autoVelocityScroll(int xVelocity) {
         //惯性滑动的代码,速率和滑动距离,以及滑动时间需要控制的很好,应该网上已经有关于这方面的算法了吧。。这里是经过N次测试调节出来的惯性滑动
         if (Math.abs(xVelocity) < 50) {
-            isUp = true;
             return;
         }
         if (valueAnimator.isRunning()) {
@@ -346,7 +340,6 @@ public class SeekView extends View {
         valueAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                isUp = true;
                 invalidate();
             }
         });
@@ -361,15 +354,16 @@ public class SeekView extends View {
      * @return
      */
     private float getWhichScaleMovePx(long scale) {
-        return width / 2 - per10Min2Px * ((scale - minScale)*1.0f/600);
+        return width / 2 - per10Min2Px * ((scale - minScale) * 1.0f / 600);
     }
 
     private void drawScaleAndNum(Canvas canvas) {
         canvas.translate(0, topGap);
         if (isDebug) {
+            //进度条触摸范围上限
             canvas.drawLine(0, 0, width, 0, testPaint);
         }
-        canvas.translate(0, progressGap / 2);//移动画布到结果值的下面
+        canvas.translate(0, progressGap / 2.0f);//移动画布，使得y轴到进度条中间
 
         int num1;//确定刻度位置
         float offsetX;
@@ -380,44 +374,64 @@ public class SeekView extends View {
             firstScale = -1;//将结果置为-1，下次不再计算初始位置
         }
 
-        num1 = -(int) (moveX*1.0f /per10Min2Px)*600;//小刻度值——>左侧最小的刻度值  //滑动刻度的整数部分
-        offsetX = (moveX*1.0f % per10Min2Px);//偏移量   //滑动刻度的小数部分
-        screenStartPos = (int) (minScale+num1);
-        screenEndPos = (int) (screenStartPos + (width*1.0f / per10Min2Px)*600);
-        curPos = 0;  //准备开始绘制当前屏幕,从最左面开始
+        num1 = -(int) (moveX * 1.0f / per10Min2Px) * 600;//小刻度值——>左侧最小的刻度值  //滑动刻度的整数部分
+        offsetX = (moveX % per10Min2Px);//偏移量   //滑动刻度的小数部分
+
         /**
-         * 这部分代码主要是计算手指抬起时，惯性滑动结束时，刻度需要停留的位置
+         * 当前屏幕展示的时间范围
          */
-//        if (isUp) {
-//            offsetX = ((moveX - width / 2 % per10Min2Px) % per10Min2Px);
-//            if (offsetX <= 0) {
-//                offsetX = per10Min2Px - Math.abs(offsetX);
-//            }
-//            leftScroll = (int) Math.abs(offsetX);
-//            rightScroll = (int) (per10Min2Px - Math.abs(offsetX));
-//
-//            float moveX2 = offsetX <= per10Min2Px / 2 ? moveX - leftScroll : moveX + rightScroll;
-//            moveX = moveX2;
-//            if (valueAnimator != null && !valueAnimator.isRunning()) {
-//                isUp = false;
-//            }
-//
-//            num1 = (int) -(moveX / per10Min2Px);
-//            offsetX = (moveX % per10Min2Px);
-//        }
-        canvas.save();
-        canvas.translate(offsetX, progressGrooveStroke);    //不加该偏移的话，滑动时刻度不会落在0~1之间只会落在整数上面,其实这个都能设置一种模式了，毕竟初衷就是指针不会落在小数上面
-//        canvas.drawPoint(0,0,testPaint);
+        screenStartPos = (int) (minScale + num1);
+        screenEndPos = (int) (screenStartPos + (width * 1.0f / per10Min2Px) * 600);
+        Log.d(TAG, "screenStartPos = " + screenStartPos + "     screenEndPos = " + screenEndPos);
+
+        /**
+         * 绘制进度条
+         */
+        if (liveProgress < screenStartPos) {
+            //画进度条槽
+            progressPaint.setColor(progressGrooveColor);
+            canvas.drawLine(0, 0, width, 0, progressPaint);
+        } else if (liveProgress <= screenEndPos) {
+            //画进度条
+            progressPaint.setColor(progressColor);
+            canvas.drawLine(0, 0, (liveProgress - screenStartPos) * 1.0f / 600 * per10Min2Px + offsetX, 0, progressPaint);
+            //画进度条槽
+            progressPaint.setColor(progressGrooveColor);
+            canvas.drawLine((liveProgress - screenStartPos) * 1.0f / 600 * per10Min2Px + offsetX, 0, width, 0, progressPaint);
+            //画Dot
+            progressPaint.setColor(progressColor);
+            progressPaint.setStrokeWidth(progressGrooveStroke * 3);
+            canvas.drawPoint((seekProgress - screenStartPos) * 1.0f / 600 * per10Min2Px + offsetX, 0, progressPaint);
+            //恢复画笔线宽
+            progressPaint.setStrokeWidth(progressGrooveStroke);
+        } else if (liveProgress > screenEndPos) {
+            //画进度条
+            progressPaint.setColor(progressColor);
+            canvas.drawLine(0, 0, width, 0, progressPaint);
+            //画Dot
+            progressPaint.setColor(progressColor);
+            progressPaint.setStrokeWidth(progressGrooveStroke * 3);
+            canvas.drawPoint((seekProgress - screenStartPos) * 1.0f / 600 * per10Min2Px + offsetX, 0, progressPaint);
+            //恢复画笔线宽
+            progressPaint.setStrokeWidth(progressGrooveStroke);
+        }
+        if (isDebug) {
+            //进度条触摸范围下限
+            canvas.drawLine(0, progressGap / 2, width, progressGap / 2, testPaint);
+        }
         /**
          * 绘制当前屏幕可见刻度
          */
+        canvas.translate(offsetX, progressGrooveStroke);    //画布移动到画文字的位置
+        if (isDebug)
+            canvas.drawPoint(0, 0, testPaint);
         float posX;
         if (dataList != null && !dataList.isEmpty()) {
             for (int curIndex = 0; curIndex < dataList.size(); curIndex++) {
                 SeekViewDataObj.ScaleMsgObj scaleMsgObj = dataList.get(curIndex);
                 if (scaleMsgObj.pos >= screenStartPos && scaleMsgObj.pos <= screenEndPos) {
-                    posX = (scaleMsgObj.pos - screenStartPos)*1.0f/600 * per10Min2Px;
-                    //画那条破线
+                    posX = (scaleMsgObj.pos - screenStartPos) * 1.0f / 600 * per10Min2Px;
+                    //画那条竖着的破线
                     canvas.drawLine(posX, 0, posX, scaleHeight * 2, scalePaint);
                     //画时间
                     txtPaint.getTextBounds(scaleMsgObj.time, 0, scaleMsgObj.time.length(), timeTxtRect);
@@ -428,56 +442,6 @@ public class SeekView extends View {
                 }
             }
         }
-//        while (curPos < width) {
-//            if (num1 % scaleCount == 0) {
-//                String txtSrc = num1 / scaleCount + minScale + "";
-//                canvas.drawLine(0, 0, 0, scaleHeight * 2, scalePaint);
-//                txtPaint.getTextBounds(txtSrc, 0, txtSrc.length(), timeTxtRect);
-//                canvas.drawText(txtSrc, -timeTxtRect.width() / 2, timeTxtRect.height() + scaleHeight * 3, txtPaint);
-//            } else {
-//                canvas.drawLine(0, 0, 0, scaleHeight, scalePaint);
-//            }
-//            ++num1;//刻度加1
-//            curPos += per10Min2Px;//绘制屏幕的距离在原有基础上+1个刻度间距
-//            canvas.translate(per10Min2Px, 0); //移动画布到下一个刻度
-//        }
-        canvas.restore();
-        Log.d(TAG, "screenStartPos = " + screenStartPos + "     screenEndPos = " + screenEndPos);
-        /**
-         * 绘制进度条
-         */
-        if (liveProgress < screenStartPos) {
-            progressPaint.setColor(progressGrooveColor);
-            canvas.drawLine(0, 0, width, 0, progressPaint);
-        } else if (liveProgress <= screenEndPos) {
-            progressPaint.setColor(progressColor);
-            canvas.drawLine(0, 0, (liveProgress - screenStartPos)*1.0f/600 * per10Min2Px + offsetX, 0, progressPaint);
-
-            progressPaint.setColor(progressGrooveColor);
-            canvas.drawLine((liveProgress - screenStartPos)*1.0f/600* per10Min2Px + offsetX, 0, width, 0, progressPaint);
-
-            progressPaint.setColor(progressColor);
-            progressPaint.setStrokeWidth(progressGrooveStroke * 3);
-            canvas.drawPoint((seekProgress - screenStartPos) *1.0f/600* per10Min2Px + offsetX, 0, progressPaint);
-
-            progressPaint.setStrokeWidth(progressGrooveStroke);
-        } else if (liveProgress > screenEndPos) {
-            progressPaint.setColor(progressColor);
-            canvas.drawLine(0, 0, width, 0, progressPaint);
-
-            progressPaint.setColor(progressColor);
-            progressPaint.setStrokeWidth(progressGrooveStroke * 3);
-            canvas.drawPoint((seekProgress - screenStartPos)*1.0f/600 * per10Min2Px + offsetX, 0, progressPaint);
-
-            progressPaint.setStrokeWidth(progressGrooveStroke);
-        }
-        if (isDebug) {
-            canvas.translate(0, progressGap / 2);
-            canvas.drawLine(0, 0, width, 0, testPaint);
-        }
-        //绘制屏幕中间用来选中刻度的最大刻度
-//        canvas.drawLine(width / 2, 0, width / 2, lagScaleHeight, progressPaint);
-
     }
 
     private void drawBg(Canvas canvas) {
@@ -485,39 +449,8 @@ public class SeekView extends View {
         canvas.drawRect(bgRect, bgPaint);
     }
 
-    public interface OnChooseResulterListener {
-        void onEndResult(String result);
-
-        void onScrollResult(String result);
-    }
-
     public interface OnInteractListener {
         void onProgressUpdate(long progress);
-    }
-
-    public void setTxtHeight(int txtHeight) {
-        this.txtHeight = txtHeight;
-        invalidate();
-    }
-
-    public void setTopGap(int topGap) {
-        this.topGap = topGap;
-        invalidate();
-    }
-
-    public void setScaleCount(int scaleCount) {
-        this.scaleCount = scaleCount;
-        invalidate();
-    }
-
-    public void setPer10Min2Px(int per10Min2Px) {
-        this.per10Min2Px = per10Min2Px;
-        invalidate();
-    }
-
-    public void setMinScale(int minScale) {
-        this.minScale = minScale;
-        invalidate();
     }
 
     public void setBgColor(int bgColor) {
@@ -527,16 +460,6 @@ public class SeekView extends View {
 
     public void setTxtColor(int txtColor) {
         this.txtColor = txtColor;
-        invalidate();
-    }
-
-    public void setProgressGrooveStroke(int progressGrooveStroke) {
-        this.progressGrooveStroke = progressGrooveStroke;
-        invalidate();
-    }
-
-    public void setScaleNumTextSize(int scaleNumTextSize) {
-        this.scaleNumTextSize = scaleNumTextSize;
         invalidate();
     }
 
