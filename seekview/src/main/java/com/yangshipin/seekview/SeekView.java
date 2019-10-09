@@ -354,11 +354,9 @@ public class SeekView extends View {
      * @return
      */
     private float getWhichScaleMovePx(long scale) {
-        if (scale <= minScale) {
-            scale = minScale;
-        }
-        if (scale >= maxScale) scale = maxScale;
-        return width / 2 - per10Min2Px * ((scale - minScale) * 1.0f / 600);
+        //scale=[minScale,maxScale]
+        scale = Math.max(minScale, Math.min(scale, maxScale));
+        return Math.min(width / 2 - per10Min2Px * ((scale - minScale) * 1.0f / 600), 0);
     }
 
     private void drawScaleAndNum(Canvas canvas) {
