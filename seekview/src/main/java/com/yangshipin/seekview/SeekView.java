@@ -55,7 +55,7 @@ public class SeekView extends View {
     /**
      * 刻度最小值
      */
-    private long minScale = 0;
+    private long minScale;
     /**
      * 第一次显示的刻度
      */
@@ -90,8 +90,8 @@ public class SeekView extends View {
     private int scaleNumTextSize = 16;
     private int scaleHeight = 3;
 
-    private long liveProgress = 72;
-    private long seekProgress = 72;
+    private long liveProgress;
+    private long seekProgress;
 
     private int screenStartPos;
     private int screenEndPos;
@@ -295,7 +295,11 @@ public class SeekView extends View {
                         moveX = getWhichScaleMovePx(maxScale) + width / 2;
                     }
                 } else if (curSlideType == SlideType.PROGRESS) {
-                    seekProgress = Math.min((int) (screenStartPos + currentX*1.0f / per10Min2Px*600), liveProgress);
+                    seekProgress = (int) (screenStartPos + currentX*1.0f / per10Min2Px*600);
+                    if (seekProgress>=liveProgress)
+                        seekProgress = liveProgress;
+                    if (seekProgress<=screenStartPos)
+                        seekProgress = screenStartPos;
                     if (onInteractListener != null)
                         onInteractListener.onProgressUpdate(seekProgress);
                 }
@@ -304,9 +308,9 @@ public class SeekView extends View {
                 if (curSlideType == SlideType.PANEL) {
                     //手指抬起时候制造惯性滑动
                     lastMoveX = moveX;
-//                    xVelocity = (int) velocityTracker.getXVelocity();
-//                    autoVelocityScroll(xVelocity);
-//                    velocityTracker.clear();
+                    xVelocity = (int) velocityTracker.getXVelocity();
+                    autoVelocityScroll(xVelocity);
+                    velocityTracker.clear();
                 }
                 break;
         }
@@ -356,7 +360,7 @@ public class SeekView extends View {
      * @param scale
      * @return
      */
-    private float getWhichScaleMovePx(float scale) {
+    private float getWhichScaleMovePx(long scale) {
         return width / 2 - per10Min2Px * ((scale - minScale)*1.0f/600);
     }
 
@@ -377,7 +381,7 @@ public class SeekView extends View {
         }
 
         num1 = -(int) (moveX*1.0f /per10Min2Px)*600;//小刻度值——>左侧最小的刻度值  //滑动刻度的整数部分
-        offsetX = (moveX*1.0f % per10Min2Px)*600;//偏移量   //滑动刻度的小数部分
+        offsetX = (moveX*1.0f % per10Min2Px);//偏移量   //滑动刻度的小数部分
         screenStartPos = (int) (minScale+num1);
         screenEndPos = (int) (screenStartPos + (width*1.0f / per10Min2Px)*600);
         curPos = 0;  //准备开始绘制当前屏幕,从最左面开始

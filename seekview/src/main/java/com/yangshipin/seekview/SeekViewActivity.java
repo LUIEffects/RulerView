@@ -51,7 +51,7 @@ public class SeekViewActivity extends AppCompatActivity {
 
         seekViewDataObj.setScaleMsgObjList(list);
         seekViewDataObj.setPlayBackStart(1570550400);
-        seekViewDataObj.setPlayBackTime(1570636200);
+        seekViewDataObj.setPlayBackTime(1570575600);
         seekViewDataObj.setPlayEndTime(1570644000);
         seekView.refreshData(seekViewDataObj);
         seekView.setOnInteractListener(new SeekView.OnInteractListener() {
