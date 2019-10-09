@@ -100,8 +100,9 @@ public class SeeBackView extends View {
         this.dataList = seekViewDataObj.getScaleMsgObjList();
         minScale = data.getPlayBackStart();
         liveProgress = data.getPlayBackTime();
-        seekProgress = data.getPlayBackTime();
-        firstScale = liveProgress;
+        if (seekProgress == 0)
+            seekProgress = data.getPlayBackTime();
+        firstScale = seekProgress;
         invalidate();
     }
 
@@ -357,13 +358,16 @@ public class SeeBackView extends View {
          */
         int screenWidth2Sec = getScreenWidth2Sec();
         long value = (seekViewDataObj.getPlayBackTime() - minScale);
-        if (value <=  screenWidth2Sec / 2){
+        if (value <= screenWidth2Sec / 2) {
             //不够半屏，补满一屏
-            maxScale = minScale+screenWidth2Sec;
-        }else {
+            maxScale = minScale + screenWidth2Sec;
+        } else {
             //其余情况都额外补半屏
-            maxScale = seekViewDataObj.getPlayBackTime()+screenWidth2Sec/2;
+            maxScale = seekViewDataObj.getPlayBackTime() + screenWidth2Sec / 2;
         }
+        /**
+         * 准备开始画
+         */
         canvas.translate(0, topGap);
         if (isDebug) {
             //进度条触摸范围上限
@@ -457,16 +461,6 @@ public class SeeBackView extends View {
 
     public interface OnInteractListener {
         void onProgressUpdate(long progress);
-    }
-
-    public void setBgColor(int bgColor) {
-        this.bgColor = bgColor;
-        invalidate();
-    }
-
-    public void setTxtColor(int txtColor) {
-        this.txtColor = txtColor;
-        invalidate();
     }
 
     public int getScreenWidth2Sec() {
