@@ -352,7 +352,18 @@ public class SeeBackView extends View {
     }
 
     private void drawScaleAndNum(Canvas canvas) {
-        maxScale = Math.max(seekViewDataObj.getPlayEndTime(), minScale + getScreenWidth2Sec());
+        /**
+         * 补屏逻辑
+         */
+        int screenWidth2Sec = getScreenWidth2Sec();
+        long value = (seekViewDataObj.getPlayBackTime() - minScale);
+        if (value <=  screenWidth2Sec / 2){
+            //不够半屏，补满一屏
+            maxScale = minScale+screenWidth2Sec;
+        }else {
+            //其余情况都额外补半屏
+            maxScale = seekViewDataObj.getPlayBackTime()+screenWidth2Sec/2;
+        }
         canvas.translate(0, topGap);
         if (isDebug) {
             //进度条触摸范围上限

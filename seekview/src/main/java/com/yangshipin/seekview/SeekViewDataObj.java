@@ -7,7 +7,6 @@ public class SeekViewDataObj {
     private List<ScaleMsgObj> scaleMsgObjList = new ArrayList<>();
     private long playBackStart;
     private long playBackTime;
-    private long playEndTime;
 
     public List<ScaleMsgObj> getScaleMsgObjList() {
         return scaleMsgObjList;
@@ -31,14 +30,6 @@ public class SeekViewDataObj {
 
     public void setPlayBackTime(long playBackTime) {
         this.playBackTime = playBackTime;
-    }
-
-    public long getPlayEndTime() {
-        return playEndTime;
-    }
-
-    public void setPlayEndTime(long playEndTime) {
-        this.playEndTime = playEndTime;
     }
 
     public static class ScaleMsgObj {
