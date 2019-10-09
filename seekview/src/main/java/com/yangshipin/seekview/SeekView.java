@@ -354,6 +354,10 @@ public class SeekView extends View {
      * @return
      */
     private float getWhichScaleMovePx(long scale) {
+        if (scale <= minScale) {
+            scale = minScale;
+        }
+        if (scale >= maxScale) scale = maxScale;
         return width / 2 - per10Min2Px * ((scale - minScale) * 1.0f / 600);
     }
 
@@ -465,7 +469,7 @@ public class SeekView extends View {
 
     public int getScreenWidth2Sec() {
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-        return (int) ((displayMetrics.widthPixels * 1.0 / per10Min2Px) * 60);
+        return (int) ((displayMetrics.widthPixels * 1.0 / per10Min2Px) * 600);
     }
 
     public static int px2dip(Context context, float pxValue) {
