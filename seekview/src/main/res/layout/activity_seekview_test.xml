@@ -7,7 +7,7 @@
     android:gravity="center_horizontal"
     android:orientation="vertical">
 
-    <com.yangshipin.seekview.SeekView
+    <com.yangshipin.seekview.SeeBackView
         android:id="@+id/mSeekView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -15,8 +15,6 @@
         lsp:bgColor="#fcfffc"
         lsp:per10Min2Px="30dp"
         lsp:progressGrooveStroke="2dp"
-        lsp:resultNumTextSize="20sp"
-        lsp:scaleCount="6"
         lsp:scaleNumTextSize="16sp"
         lsp:topGap="25dp"
         lsp:txtColor="#666666"

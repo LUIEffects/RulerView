@@ -24,7 +24,7 @@ import java.util.List;
  * @author taitsun
  * @since 2019-09-28
  */
-public class SeekView extends View {
+public class SeeBackView extends View {
 
     //每10分钟对应多少dp
     private static final int PER_10MIN_2_DP = 20;
@@ -128,15 +128,15 @@ public class SeekView extends View {
     private SlideType curSlideType;
     private boolean isDebug = false;
 
-    public SeekView(Context context) {
+    public SeeBackView(Context context) {
         this(context, null);
     }
 
-    public SeekView(Context context, @Nullable AttributeSet attrs) {
+    public SeeBackView(Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public SeekView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public SeeBackView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         setAttr(attrs, defStyleAttr);
         init();
@@ -148,30 +148,30 @@ public class SeekView extends View {
 
     private void setAttr(AttributeSet attrs, int defStyleAttr) {
 
-        TypedArray typedArray = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.SeekView, defStyleAttr, 0);
+        TypedArray typedArray = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.SeeBackView, defStyleAttr, 0);
 
-        scaleHeight = typedArray.getDimensionPixelSize(R.styleable.SeekView_scaleHeight, (int) TypedValue.applyDimension(
+        scaleHeight = typedArray.getDimensionPixelSize(R.styleable.SeeBackView_scaleHeight, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, scaleHeight, getResources().getDisplayMetrics()));
 
-        txtHeight = typedArray.getDimensionPixelSize(R.styleable.SeekView_txtHeight, (int) TypedValue.applyDimension(
+        txtHeight = typedArray.getDimensionPixelSize(R.styleable.SeeBackView_txtHeight, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, txtHeight, getResources().getDisplayMetrics()));
 
-        topGap = typedArray.getDimensionPixelSize(R.styleable.SeekView_topGap, (int) TypedValue.applyDimension(
+        topGap = typedArray.getDimensionPixelSize(R.styleable.SeeBackView_topGap, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, topGap, getResources().getDisplayMetrics()));
 
-        progressGap = typedArray.getDimensionPixelSize(R.styleable.SeekView_progressGap, (int) TypedValue.applyDimension(
+        progressGap = typedArray.getDimensionPixelSize(R.styleable.SeeBackView_progressGap, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, progressGap, getResources().getDisplayMetrics()));
 
         per10Min2Px = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, PER_10MIN_2_DP, getResources().getDisplayMetrics());
 
-        bgColor = typedArray.getColor(R.styleable.SeekView_bgColor, bgColor);
+        bgColor = typedArray.getColor(R.styleable.SeeBackView_bgColor, bgColor);
 
-        txtColor = typedArray.getColor(R.styleable.SeekView_txtColor, txtColor);
+        txtColor = typedArray.getColor(R.styleable.SeeBackView_txtColor, txtColor);
 
-        progressGrooveStroke = typedArray.getDimensionPixelSize(R.styleable.SeekView_progressGrooveStroke, (int) TypedValue.applyDimension(
+        progressGrooveStroke = typedArray.getDimensionPixelSize(R.styleable.SeeBackView_progressGrooveStroke, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, progressGrooveStroke, getResources().getDisplayMetrics()));
 
-        scaleNumTextSize = typedArray.getDimensionPixelSize(R.styleable.SeekView_scaleNumTextSize, (int) TypedValue.applyDimension(
+        scaleNumTextSize = typedArray.getDimensionPixelSize(R.styleable.SeeBackView_scaleNumTextSize, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, scaleNumTextSize, getResources().getDisplayMetrics()));
         typedArray.recycle();
     }

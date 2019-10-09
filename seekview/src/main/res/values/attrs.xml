@@ -1,19 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
-    <declare-styleable name="SeekView">
+    <declare-styleable name="SeeBackView">
         <attr name="scaleHeight" format="dimension"/>       <!--刻度的高度-->
-        <attr name="rulerWidth" format="dimension" />                 <!--尺子的宽度-->
         <attr name="txtHeight" format="dimension"/>
         <attr name="topGap" format="dimension" />          <!--尺子距离结果的高度-->
         <attr name="progressGap" format="dimension"/>
         <attr name="per10Min2Px" format="dimension" />                  <!--刻度间距-->
-        <attr name="firstScale" format="float" />                    <!--默认选中的刻度-->
-        <attr name="maxScale" format="integer" />                    <!--最大刻度-->
-        <attr name="minScale" format="integer" />                    <!--最小刻度-->
         <attr name="bgColor" format="color" />                       <!--背景色-->
         <attr name="txtColor" format="color" />                 <!--刻度数的颜色-->
         <attr name="progressGrooveStroke" format="dimension" />          <!--大刻度的宽度-->
-        <attr name="resultNumTextSize" format="dimension" />         <!--结果字体大小-->
         <attr name="scaleNumTextSize" format="dimension" />          <!--刻度字体大小-->
     </declare-styleable>
 </resources>
