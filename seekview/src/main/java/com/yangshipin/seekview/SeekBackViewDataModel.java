@@ -3,7 +3,7 @@ package com.yangshipin.seekview;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SeekViewDataObj {
+public class SeekBackViewDataModel {
     private List<ScaleMsgObj> scaleMsgObjList = new ArrayList<>();
     private long playBackStart;
     private long playBackTime;

@@ -91,13 +91,13 @@ public class SeeBackView extends View {
     private int screenStartPos;
     private int screenEndPos;
 
-    private List<SeekViewDataObj.ScaleMsgObj> dataList;
-    private SeekViewDataObj seekViewDataObj;
+    private List<SeekBackViewDataModel.ScaleMsgObj> dataList;
+    private SeekBackViewDataModel seekBackViewDataModel;
 
 
-    public void refreshData(SeekViewDataObj data) {
-        this.seekViewDataObj = data;
-        this.dataList = seekViewDataObj.getScaleMsgObjList();
+    public void refreshData(SeekBackViewDataModel data) {
+        this.seekBackViewDataModel = data;
+        this.dataList = seekBackViewDataModel.getScaleMsgObjList();
         minScale = data.getPlayBackStart();
         liveProgress = data.getPlayBackTime();
         if (seekProgress == 0)
@@ -238,7 +238,7 @@ public class SeeBackView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         drawBg(canvas);
-        if (seekViewDataObj != null)
+        if (seekBackViewDataModel != null)
             drawScaleAndNum(canvas);
     }
 
@@ -357,13 +357,13 @@ public class SeeBackView extends View {
          * 补屏逻辑
          */
         int screenWidth2Sec = getScreenWidth2Sec();
-        long value = (seekViewDataObj.getPlayBackTime() - minScale);
+        long value = (seekBackViewDataModel.getPlayBackTime() - minScale);
         if (value <= screenWidth2Sec / 2) {
             //不够半屏，补满一屏
             maxScale = minScale + screenWidth2Sec;
         } else {
             //其余情况都额外补半屏
-            maxScale = seekViewDataObj.getPlayBackTime() + screenWidth2Sec / 2;
+            maxScale = seekBackViewDataModel.getPlayBackTime() + screenWidth2Sec / 2;
         }
         /**
          * 准备开始画
@@ -438,7 +438,7 @@ public class SeeBackView extends View {
         float posX;
         if (dataList != null && !dataList.isEmpty()) {
             for (int curIndex = 0; curIndex < dataList.size(); curIndex++) {
-                SeekViewDataObj.ScaleMsgObj scaleMsgObj = dataList.get(curIndex);
+                SeekBackViewDataModel.ScaleMsgObj scaleMsgObj = dataList.get(curIndex);
                 if (scaleMsgObj.pos >= screenStartPos && scaleMsgObj.pos <= screenEndPos) {
                     posX = (scaleMsgObj.pos - screenStartPos) * 1.0f / 600 * per10Min2Px;
                     //画那条竖着的破线
