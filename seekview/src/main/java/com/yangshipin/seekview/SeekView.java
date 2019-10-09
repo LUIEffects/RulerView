@@ -107,7 +107,6 @@ public class SeekView extends View {
         liveProgress = data.getPlayBackTime();
         seekProgress = data.getPlayBackTime();
         firstScale = liveProgress;
-        maxScale = Math.max(data.getPlayEndTime(), minScale + getScreenWidth2Sec());
         invalidate();
     }
 
@@ -360,6 +359,7 @@ public class SeekView extends View {
     }
 
     private void drawScaleAndNum(Canvas canvas) {
+        maxScale = Math.max(seekViewDataObj.getPlayEndTime(), minScale + getScreenWidth2Sec());
         canvas.translate(0, topGap);
         if (isDebug) {
             //进度条触摸范围上限
@@ -466,8 +466,7 @@ public class SeekView extends View {
     }
 
     public int getScreenWidth2Sec() {
-        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-        return (int) ((displayMetrics.widthPixels * 1.0 / per10Min2Px) * 600);
+        return (int) ((width * 1.0 / per10Min2Px) * 600);
     }
 
     public static int px2dip(Context context, float pxValue) {
