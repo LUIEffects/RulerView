@@ -13,20 +13,22 @@
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         lsp:bgColor="#fcfffc"
+        lsp:per10Min2Px="30dp"
         lsp:progressGrooveStroke="2dp"
         lsp:resultNumTextSize="20sp"
         lsp:scaleCount="6"
-        lsp:per10Min2Px="30dp"
         lsp:scaleNumTextSize="16sp"
         lsp:topGap="25dp"
         lsp:txtColor="#666666"
         lsp:txtHeight="40dp" />
 
-    <SeekBar
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/mBtn"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center_horizontal"
         android:layout_marginTop="50dp"
-        android:max="10"
-        android:layout_height="5dp" />
+        android:text="click" />
 
     <TextView
         android:id="@+id/mTv"
